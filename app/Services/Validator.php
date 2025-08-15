@@ -21,6 +21,23 @@ class Validator
             }
         }
 
+        // Session (optional but validate format if given)
+        $sessionRaw = $get('session');
+        if ($sessionRaw !== '') {
+            if (!preg_match('/^\d{4}-\d{4}$/', $sessionRaw)) {
+                $errors[] = 'Session format must be YYYY-YYYY (e.g. 2025-2026).';
+            } else {
+                [$y1, $y2] = explode('-', $sessionRaw);
+                if (((int)$y2) !== ((int)$y1 + 1)) {
+                    $errors[] = 'Session end year must be start year + 1 (e.g. 2025-2026).';
+                } else {
+                    $data['session'] = $sessionRaw;
+                }
+            }
+        } else {
+            $data['session'] = null;
+        }
+
         // basic sanitization
         $data['roll_no'] = $get('roll_no');
         $data['enrollment_no'] = $get('enrollment_no');
@@ -28,7 +45,7 @@ class Validator
         $data['section_id'] = (int)$get('section_id');
         $data['student_name'] = $get('student_name');
         $data['dob'] = $get('dob') ?: null;
-        // validate date format (YYYY-MM-DD)
+        // validate date format (YYYY-MM-DD) if present
         if (!empty($data['dob'])) {
             $d = date_parse($data['dob']);
             if (!checkdate((int)$d['month'], (int)$d['day'], (int)$d['year'])) {
@@ -46,7 +63,6 @@ class Validator
             if (strlen($cnicDigits) !== 13) {
                 $errors[] = 'CNIC must contain 13 digits (with or without dashes).';
             } else {
-                // store original format if provided, but here we store digits
                 $data['cnic'] = $cnicDigits;
             }
         } else {

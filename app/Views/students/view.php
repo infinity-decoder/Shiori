@@ -33,6 +33,7 @@
             <tr><th style="width:200px">ID</th><td><?= htmlspecialchars($student['id']); ?></td></tr>
             <tr><th>Roll No.</th><td><?= htmlspecialchars($student['roll_no']); ?></td></tr>
             <tr><th>Enrollment No.</th><td><?= htmlspecialchars($student['enrollment_no']); ?></td></tr>
+            <tr><th>Session</th><td><?= htmlspecialchars($student['session'] ?? ''); ?></td></tr>
             <tr><th>Name</th><td><?= htmlspecialchars($student['student_name']); ?></td></tr>
             <tr><th>Class / Section</th><td><?= htmlspecialchars($student['class_name'] ?? $student['class_id']); ?> / <?= htmlspecialchars($student['section_name'] ?? $student['section_id']); ?></td></tr>
             <tr><th>Date of Birth</th><td><?= htmlspecialchars($student['dob'] ?? ''); ?></td></tr>

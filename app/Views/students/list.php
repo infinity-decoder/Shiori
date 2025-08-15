@@ -44,6 +44,7 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
               <th>Photo</th>
               <th>Roll</th>
               <th>Enrollment</th>
+              <th>Session</th>
               <th>Name</th>
               <th>Class</th>
               <th>Section</th>
@@ -52,7 +53,7 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
           </thead>
           <tbody>
           <?php if (empty($students)): ?>
-            <tr><td colspan="8" class="text-center py-4">No students yet.</td></tr>
+            <tr><td colspan="9" class="text-center py-4">No students yet.</td></tr>
           <?php else: ?>
             <?php foreach ($students as $s): ?>
             <tr>
@@ -68,6 +69,7 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
               </td>
               <td><?= htmlspecialchars($s['roll_no']); ?></td>
               <td><?= htmlspecialchars($s['enrollment_no']); ?></td>
+              <td><?= htmlspecialchars($s['session'] ?? ''); ?></td>
               <td><?= htmlspecialchars($s['student_name']); ?></td>
               <td><?= htmlspecialchars($s['class_name'] ?? $s['class_id']); ?></td>
               <td><?= htmlspecialchars($s['section_name'] ?? $s['section_id']); ?></td>
@@ -91,7 +93,7 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
         </table>
       </div>
 
-      <!-- Pagination -->
+      <!-- Pagination (unchanged from previous) -->
       <nav class="mt-3" aria-label="Student pagination">
         <ul class="pagination mb-0">
           <?php

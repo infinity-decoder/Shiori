@@ -27,7 +27,7 @@ class Student
         $offset = max(0, ($page - 1) * $perPage);
         $pdo = DB::get();
         $stmt = $pdo->prepare("
-            SELECT s.id, s.roll_no, s.enrollment_no, s.student_name, s.class_id, s.section_id,
+            SELECT s.id, s.roll_no, s.enrollment_no, s.session, s.student_name, s.class_id, s.section_id,
                    c.name AS class_name, sec.name AS section_name, s.photo_path
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
@@ -53,15 +53,16 @@ class Student
         $pdo = DB::get();
         $stmt = $pdo->prepare("
             INSERT INTO students
-                (roll_no, enrollment_no, class_id, section_id, student_name, dob, b_form,
+                (roll_no, enrollment_no, session, class_id, section_id, student_name, dob, b_form,
                  father_name, cnic, mobile, address, father_occupation, category_id, fcategory_id, email, photo_path)
             VALUES
-                (:roll_no, :enrollment_no, :class_id, :section_id, :student_name, :dob, :b_form,
+                (:roll_no, :enrollment_no, :session, :class_id, :section_id, :student_name, :dob, :b_form,
                  :father_name, :cnic, :mobile, :address, :father_occupation, :category_id, :fcategory_id, :email, :photo_path)
         ");
         $stmt->execute([
             ':roll_no' => $data['roll_no'] ?? '',
             ':enrollment_no' => $data['enrollment_no'] ?? '',
+            ':session' => $data['session'] ?? null,
             ':class_id' => $data['class_id'],
             ':section_id' => $data['section_id'],
             ':student_name' => $data['student_name'],
@@ -88,7 +89,7 @@ class Student
         $params = [':id' => $id];
 
         foreach ($data as $k => $v) {
-            if (in_array($k, ['roll_no','enrollment_no','class_id','section_id','student_name','dob','b_form','father_name','cnic','mobile','address','father_occupation','category_id','fcategory_id','email','photo_path'], true)) {
+            if (in_array($k, ['roll_no','enrollment_no','session','class_id','section_id','student_name','dob','b_form','father_name','cnic','mobile','address','father_occupation','category_id','fcategory_id','email','photo_path'], true)) {
                 $fields[] = "`$k` = :$k";
                 $params[":$k"] = ($v === '') ? null : $v;
             }
