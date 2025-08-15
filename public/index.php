@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-// ---------- Bootstrap ----------
 define('BASE_PATH', dirname(__DIR__));
 
 $app = require BASE_PATH . '/config/app.php';
@@ -36,7 +35,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// ---------- Requires (Core + Models + Controllers) ----------
+// ---------- Core
 require_once BASE_PATH . '/app/Core/DB.php';
 require_once BASE_PATH . '/app/Core/Router.php';
 require_once BASE_PATH . '/app/Core/Controller.php';
@@ -46,16 +45,22 @@ require_once BASE_PATH . '/app/Core/Auth.php';
 
 // Models
 require_once BASE_PATH . '/app/Models/User.php';
+require_once BASE_PATH . '/app/Models/Student.php';
+require_once BASE_PATH . '/app/Models/Lookup.php';
+
+// Services
+require_once BASE_PATH . '/app/Services/Validator.php';
+require_once BASE_PATH . '/app/Services/ImageService.php';
 
 // Controllers
 require_once BASE_PATH . '/app/Controllers/AuthController.php';
 require_once BASE_PATH . '/app/Controllers/DashboardController.php';
 require_once BASE_PATH . '/app/Controllers/ApiController.php';
+require_once BASE_PATH . '/app/Controllers/StudentController.php';
 
 // ---------- Routing ----------
 $router = new Router($app['base_url']);
 
-// Routes
 $router->get('/', function () use ($app) {
     if (Auth::check()) {
         header('Location: ' . $app['base_url'] . '/dashboard');
@@ -71,8 +76,16 @@ $router->post('/logout', 'AuthController@logout');
 
 $router->get('/dashboard', 'DashboardController@index');
 
-// API for dashboard stats (protected)
+// API
 $router->get('/api/stats', 'ApiController@stats');
 
-// Dispatch
+// Student CRUD (using query params for id)
+$router->get('/students', 'StudentController@index');
+$router->get('/students/create', 'StudentController@create');
+$router->post('/students', 'StudentController@store');
+$router->get('/students/show', 'StudentController@show');      // ?id=#
+$router->get('/students/edit', 'StudentController@edit');      // ?id=#
+$router->post('/students/update', 'StudentController@update'); // ?id=#
+$router->post('/students/delete', 'StudentController@destroy'); // ?id=#
+
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
