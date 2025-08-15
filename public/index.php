@@ -1,0 +1,77 @@
+<?php
+declare(strict_types=1);
+
+// ---------- Bootstrap ----------
+define('BASE_PATH', dirname(__DIR__));
+
+$app = require BASE_PATH . '/config/app.php';
+
+if (!headers_sent()) {
+    // Error reporting based on app config
+    if (!empty($app['debug'])) {
+        ini_set('display_errors', '1');
+        error_reporting(E_ALL);
+    } else {
+        ini_set('display_errors', '0');
+        error_reporting(0);
+    }
+
+    // Session cookie flags
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    if (PHP_VERSION_ID >= 70300) {
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => $isSecure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    } else {
+        // Fallback for older PHP: best-effort
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_secure', $isSecure ? '1' : '0');
+        ini_set('session.cookie_samesite', 'Lax');
+    }
+}
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// ---------- Requires (Core + Models + Controllers) ----------
+require_once BASE_PATH . '/app/Core/DB.php';
+require_once BASE_PATH . '/app/Core/Router.php';
+require_once BASE_PATH . '/app/Core/Controller.php';
+require_once BASE_PATH . '/app/Core/View.php';
+require_once BASE_PATH . '/app/Core/CSRF.php';
+require_once BASE_PATH . '/app/Core/Auth.php';
+
+// Models
+require_once BASE_PATH . '/app/Models/User.php';
+
+// Controllers
+require_once BASE_PATH . '/app/Controllers/AuthController.php';
+require_once BASE_PATH . '/app/Controllers/DashboardController.php';
+
+// ---------- Routing ----------
+$router = new Router($app['base_url']);
+
+// Routes
+$router->get('/', function () use ($app) {
+    if (Auth::check()) {
+        header('Location: ' . $app['base_url'] . '/dashboard');
+    } else {
+        header('Location: ' . $app['base_url'] . '/login');
+    }
+    exit;
+});
+
+$router->get('/login', 'AuthController@loginForm');
+$router->post('/login', 'AuthController@login');
+$router->post('/logout', 'AuthController@logout');
+
+$router->get('/dashboard', 'DashboardController@index');
+
+// Dispatch
+$router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
