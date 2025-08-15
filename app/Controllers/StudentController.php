@@ -4,10 +4,20 @@ class StudentController extends Controller
     public function index(): void
     {
         $this->requireAuth();
-        $students = Student::findAll(50, 0); // latest 50
+
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = (int)($_GET['per_page'] ?? 10);
+        if (!in_array($perPage, [10,25,50], true)) $perPage = 10;
+
+        $total = Student::countAll();
+        $students = Student::paginate($page, $perPage);
+
         $this->view('students/list.php', [
-            'title'    => 'Students | Shiori',
+            'title' => 'Students | Shiori',
             'students' => $students,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
         ]);
     }
 
@@ -43,20 +53,17 @@ class StudentController extends Controller
         $validation = Validator::validateStudent($_POST, $_FILES);
         if (!empty($validation['errors'])) {
             Auth::flash('error', implode(' | ', $validation['errors']));
-            // keep user-entered data in session if you want (optional)
             $this->redirect('/students/create');
         }
 
         $data = $validation['data'];
         try {
             $id = Student::create($data);
-            // handle photo upload if present
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
                 if ($saved['ok']) {
                     Student::update($id, ['photo_path' => $saved['filename']]);
                 } else {
-                    // delete created student since photo failed? better to keep but notify
                     Auth::flash('error', 'Saved student but photo upload failed: ' . $saved['error']);
                     $this->redirect('/students');
                 }
@@ -64,7 +71,6 @@ class StudentController extends Controller
             Auth::flash('success', 'Student added successfully.');
             $this->redirect('/students');
         } catch (PDOException $e) {
-            // Unique constraint or other DB error
             Auth::flash('error', 'Database error: ' . $e->getMessage());
             $this->redirect('/students/create');
         }
@@ -133,7 +139,6 @@ class StudentController extends Controller
 
             // handle photo replacement
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
-                // delete old photos first (if any)
                 if (!empty($student['photo_path'])) {
                     ImageService::deleteStudentPhoto($student['photo_path']);
                 }
@@ -191,6 +196,13 @@ class StudentController extends Controller
         $student = Student::find($id);
         if (!$student) {
             Auth::flash('error', 'Student not found.');
+            $this->redirect('/students');
+        }
+
+        // Role-based delete: only admin allowed
+        $user = Auth::user();
+        if (empty($user['role']) || $user['role'] !== 'admin') {
+            Auth::flash('error', 'You do not have permission to delete records.');
             $this->redirect('/students');
         }
 

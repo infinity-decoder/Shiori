@@ -1,21 +1,41 @@
 <?php
-// $students passed from controller
+// $students, $page, $per_page, $total are provided
+$totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
 ?>
 <div class="container">
   <div class="row mb-3">
     <div class="col">
       <h1 class="h4 mb-0">Students</h1>
-      <p class="text-muted">Manage student records (add, view, edit, delete).</p>
+      <p class="text-muted">Manage student records (add, view, edit, delete). <small class="text-muted ms-2">Tip: press <kbd>/</kbd> to open search.</small></p>
     </div>
-    <div class="col-auto">
+    <div class="col-auto d-flex align-items-center gap-2">
       <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary">
         <i class="bi bi-plus-lg"></i> Add Student
       </a>
+      <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="bi bi-search"></i> Search</button>
     </div>
   </div>
 
   <div class="card card-soft">
-    <div class="card-body p-0">
+    <div class="card-body p-2">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <form method="GET" action="<?= $baseUrl; ?>/students" class="d-flex align-items-center gap-2 mb-0">
+            <label class="small text-muted mb-0">Show</label>
+            <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()" style="width:90px;">
+              <option value="10" <?= $per_page == 10 ? 'selected' : ''; ?>>10</option>
+              <option value="25" <?= $per_page == 25 ? 'selected' : ''; ?>>25</option>
+              <option value="50" <?= $per_page == 50 ? 'selected' : ''; ?>>50</option>
+            </select>
+            <input type="hidden" name="page" value="1">
+          </form>
+        </div>
+
+        <div class="small text-muted">
+          Showing page <?= $page; ?> of <?= max(1, $totalPages); ?> — total <?= $total; ?> records
+        </div>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-striped mb-0">
           <thead class="table-light">
@@ -27,7 +47,7 @@
               <th>Name</th>
               <th>Class</th>
               <th>Section</th>
-              <th>Actions</th>
+              <th style="width:180px">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -51,7 +71,7 @@
               <td><?= htmlspecialchars($s['student_name']); ?></td>
               <td><?= htmlspecialchars($s['class_name'] ?? $s['class_id']); ?></td>
               <td><?= htmlspecialchars($s['section_name'] ?? $s['section_id']); ?></td>
-              <td style="width:180px">
+              <td>
                 <a href="<?= $baseUrl; ?>/students/show?id=<?= $s['id']; ?>" class="btn btn-sm btn-outline-primary me-1">
                   <i class="bi bi-eye"></i>
                 </a>
@@ -70,11 +90,36 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination -->
+      <nav class="mt-3" aria-label="Student pagination">
+        <ul class="pagination mb-0">
+          <?php
+            $start = max(1, $page - 3);
+            $end = min(max(1, $totalPages), $page + 3);
+            if ($page > 1):
+          ?>
+            <li class="page-item"><a class="page-link" href="<?= $baseUrl; ?>/students?page=<?= $page-1; ?>&per_page=<?= $per_page; ?>">« Prev</a></li>
+          <?php endif; ?>
+
+          <?php for ($p = $start; $p <= $end; $p++): ?>
+            <li class="page-item <?= $p === $page ? 'active' : ''; ?>">
+              <a class="page-link" href="<?= $baseUrl; ?>/students?page=<?= $p; ?>&per_page=<?= $per_page; ?>"><?= $p; ?></a>
+            </li>
+          <?php endfor; ?>
+
+          <?php if ($page < $totalPages): ?>
+            <li class="page-item"><a class="page-link" href="<?= $baseUrl; ?>/students?page=<?= $page+1; ?>&per_page=<?= $per_page; ?>">Next »</a></li>
+          <?php endif; ?>
+        </ul>
+      </nav>
+
     </div>
   </div>
 </div>
 
 <script>
+// delete handler (uses SweetAlert)
 document.querySelectorAll('.btn-delete').forEach(btn => {
   btn.addEventListener('click', function (e) {
     e.preventDefault();
@@ -92,5 +137,21 @@ document.querySelectorAll('.btn-delete').forEach(btn => {
       }
     });
   });
+});
+
+// Keyboard shortcut: '/' opens search modal unless focused on input
+document.addEventListener('keydown', function (e) {
+  if (e.key === '/' && document.activeElement && ['INPUT', 'TEXTAREA'].indexOf(document.activeElement.tagName) === -1) {
+    e.preventDefault();
+    const modal = document.getElementById('searchModal');
+    if (modal) {
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+      setTimeout(() => {
+        const input = modal.querySelector('#searchInput');
+        input?.focus();
+      }, 120);
+    }
+  }
 });
 </script>

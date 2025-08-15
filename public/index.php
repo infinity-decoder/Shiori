@@ -78,8 +78,9 @@ $router->get('/dashboard', 'DashboardController@index');
 
 // API
 $router->get('/api/stats', 'ApiController@stats');
+$router->get('/api/search', 'ApiController@search'); // <-- unified search endpoint
 
-// Student CRUD (using query params for id)
+// Student CRUD
 $router->get('/students', 'StudentController@index');
 $router->get('/students/create', 'StudentController@create');
 $router->post('/students', 'StudentController@store');

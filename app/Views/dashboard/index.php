@@ -52,7 +52,9 @@
       <div class="card card-soft p-3">
         <div class="card-body">
           <h5 class="card-title mb-3">Category distribution</h5>
-          <canvas id="categoryChart" height="220"></canvas>
+          <div style="height:300px;">
+            <canvas id="categoryChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -61,16 +63,23 @@
       <div class="card card-soft p-3">
         <div class="card-body">
           <h5 class="card-title mb-3">Quick actions</h5>
-          <p class="text-muted">Use the cards and controls to add/search student records (coming in next milestones).</p>
+          <p class="text-muted">Use the cards and controls to add/search student records.</p>
           <div class="d-grid gap-2 d-md-block">
-            <a href="#" class="btn btn-primary me-2"><i class="bi bi-plus-lg me-1"></i> Add Record</a>
-            <a href="#" class="btn btn-outline-secondary"><i class="bi bi-search me-1"></i> Search</a>
+            <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary me-2"><i class="bi bi-plus-lg me-1"></i> Add Record</a>
+
+            <!-- Search opens the modal included below -->
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal">
+              <i class="bi bi-search me-1"></i> Search
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- include search modal markup (server renders modal into the page) -->
+<?php require BASE_PATH . '/app/Views/students/search_modal.php'; ?>
 
 <script>
   (function () {
@@ -80,7 +89,6 @@
     const elTotalSections = document.getElementById('totalSections');
     const ctx = document.getElementById('categoryChart').getContext('2d');
 
-    // placeholder chart until data arrives
     let chart = new Chart(ctx, {
       type: 'doughnut',
       data: {
@@ -104,7 +112,6 @@
         const res = await fetch(baseUrl + '/api/stats', { credentials: 'same-origin' });
         if (!res.ok) {
           if (res.status === 401) {
-            // Not authenticated — redirect to login
             window.location = baseUrl + '/login';
             return;
           }
@@ -119,7 +126,6 @@
         const labels = (data.categories || []).map(c => c.name);
         const values = (data.categories || []).map(c => c.count);
 
-        // generate palette if needed
         const palette = [
           '#6366f1', '#06b6d4', '#f59e0b', '#ef4444', '#10b981',
           '#8b5cf6', '#f97316', '#06b6d4', '#ef4444'
@@ -142,7 +148,6 @@
       }
     }
 
-    // load now
     loadStats();
   })();
 </script>

@@ -22,8 +22,9 @@ class Student
         return $row ?: null;
     }
 
-    public static function findAll(int $limit = 50, int $offset = 0): array
+    public static function paginate(int $page = 1, int $perPage = 10): array
     {
+        $offset = max(0, ($page - 1) * $perPage);
         $pdo = DB::get();
         $stmt = $pdo->prepare("
             SELECT s.id, s.roll_no, s.enrollment_no, s.student_name, s.class_id, s.section_id,
@@ -32,12 +33,19 @@ class Student
             LEFT JOIN classes c ON s.class_id = c.id
             LEFT JOIN sections sec ON s.section_id = sec.id
             ORDER BY s.id DESC
-            LIMIT ? OFFSET ?
+            LIMIT :limit OFFSET :offset
         ");
-        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
-        $stmt->bindValue(2, $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function countAll(): int
+    {
+        $pdo = DB::get();
+        $stmt = $pdo->query("SELECT COUNT(*) FROM students");
+        return (int)$stmt->fetchColumn();
     }
 
     public static function create(array $data): int
@@ -80,7 +88,6 @@ class Student
         $params = [':id' => $id];
 
         foreach ($data as $k => $v) {
-            // allow only known fields
             if (in_array($k, ['roll_no','enrollment_no','class_id','section_id','student_name','dob','b_form','father_name','cnic','mobile','address','father_occupation','category_id','fcategory_id','email','photo_path'], true)) {
                 $fields[] = "`$k` = :$k";
                 $params[":$k"] = ($v === '') ? null : $v;

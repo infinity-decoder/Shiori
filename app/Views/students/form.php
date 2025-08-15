@@ -17,7 +17,7 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
 
   <div class="card card-soft">
     <div class="card-body">
-      <form method="POST" action="<?= $action; ?>" enctype="multipart/form-data">
+      <form id="studentForm" method="POST" action="<?= $action; ?>" enctype="multipart/form-data">
         <?= CSRF::field(); ?>
 
         <?php if ($mode === 'edit'): ?>
@@ -28,6 +28,7 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
         <?php endif; ?>
 
         <div class="row g-3">
+          <!-- (same fields as before) -->
           <div class="col-md-4">
             <label class="form-label">Roll No.</label>
             <input name="roll_no" class="form-control" value="<?= htmlspecialchars($student['roll_no'] ?? '') ?>" required>
@@ -138,8 +139,10 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
                 <img src="<?= $baseUrl; ?>/uploads/students/<?= rawurlencode($student['photo_path']); ?>" alt="photo" style="height:120px; border-radius:6px;">
               </div>
             <?php endif; ?>
-            <input name="photo" type="file" accept="image/*" class="form-control">
-            <small class="text-muted">Allowed: jpg, png, webp. Max 3 MB.</small>
+
+            <!-- FilePond input -->
+            <input id="photoFile" name="photo" type="file" accept="image/*" class="form-control">
+            <small class="text-muted">Allowed: jpg, png, webp. Max 3 MB. (FilePond enhances upload)</small>
           </div>
         </div>
 
@@ -153,8 +156,30 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
 </div>
 
 <script>
-  // initialize date picker (flatpickr included in layout)
+  // init flatpickr
   if (typeof flatpickr !== 'undefined') {
     flatpickr("#dob", { dateFormat: "Y-m-d", allowInput: true });
   }
+
+  // FilePond initialization (graceful: only if FilePond loaded)
+  (function () {
+    if (typeof FilePond === 'undefined') return;
+
+    // register any plugins if needed (file type validation etc)
+    // FilePond.setOptions can configure server endpoints for async upload. We're using simple form submit POST so no server config needed.
+
+    const inputElement = document.getElementById('photoFile');
+    const pond = FilePond.create(inputElement, {
+      allowMultiple: false,
+      maxFiles: 1,
+      maxFileSize: '3MB',
+      acceptedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      labelIdle: 'Drag & Drop your photo or <span class="filepond--label-action">Browse</span>',
+    });
+
+    // When user removes file, FilePond will simply clear the input — form submit will have no file
+    // No extra handling required here.
+
+    // If browser doesn't support FilePond, the regular <input> remains usable.
+  })();
 </script>

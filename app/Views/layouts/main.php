@@ -1,5 +1,5 @@
 <?php
-// $viewFile is provided by View::render
+// $viewFile (path of the view) is made available by View::render
 $flashError   = Auth::getFlash('error');
 $flashSuccess = Auth::getFlash('success');
 $appCfg       = require BASE_PATH . '/config/app.php';
@@ -25,27 +25,12 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
   <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet">
 
   <style>
-    :root {
-      --card-radius: 1rem;
-    }
-    body.bg-gradient {
-      background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
-      min-height: 100vh;
-      color: #111827;
-    }
-    .auth-card {
-      backdrop-filter: blur(6px);
-      background: rgba(255,255,255,0.95);
-      border-radius: var(--card-radius);
-    }
-    .card-soft {
-      border-radius: var(--card-radius);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
-    }
-    .stat-number {
-      font-size: 1.6rem;
-      font-weight: 700;
-    }
+    :root { --card-radius: 1rem; }
+    body.bg-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); min-height:100vh; color:#111827; }
+    .auth-card { backdrop-filter: blur(6px); background: rgba(255,255,255,0.95); border-radius: var(--card-radius); }
+    .card-soft { border-radius: var(--card-radius); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .stat-number { font-size: 1.6rem; font-weight: 700; }
+    pre { white-space: pre-wrap; word-break: break-word; }
   </style>
 
   <!-- SweetAlert2 -->
@@ -91,28 +76,60 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 <!-- Flash alerts -->
 <?php if ($flashError): ?>
 <script>
-  Swal.fire({
+Swal.fire({
     icon: 'error',
     title: 'Error',
     text: <?= json_encode($flashError); ?>,
     confirmButtonText: 'OK'
-  });
+});
 </script>
 <?php endif; ?>
 
 <?php if ($flashSuccess): ?>
 <script>
-  Swal.fire({
+Swal.fire({
     icon: 'success',
     title: 'Success',
     text: <?= json_encode($flashSuccess); ?>,
     timer: 1500,
     showConfirmButton: false
-  });
+});
 </script>
 <?php endif; ?>
 
-<!-- Bootstrap JS bundle -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/**
+ * Global helpers
+ */
+
+// Escape string for HTML insertion (if ever needed in JS)
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// Global keyboard shortcut: '/' opens search modal if present and not focused on input
+document.addEventListener('keydown', function (e) {
+  if (e.key === '/' && document.activeElement && ['INPUT', 'TEXTAREA'].indexOf(document.activeElement.tagName) === -1) {
+    // find modal
+    const modal = document.getElementById('searchModal');
+    if (!modal) return;
+    e.preventDefault();
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    setTimeout(() => {
+      const input = modal.querySelector('#searchInput');
+      input?.focus();
+    }, 120);
+  }
+});
+</script>
 </body>
 </html>
