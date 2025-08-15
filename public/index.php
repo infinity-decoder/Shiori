@@ -7,7 +7,6 @@ define('BASE_PATH', dirname(__DIR__));
 $app = require BASE_PATH . '/config/app.php';
 
 if (!headers_sent()) {
-    // Error reporting based on app config
     if (!empty($app['debug'])) {
         ini_set('display_errors', '1');
         error_reporting(E_ALL);
@@ -16,7 +15,6 @@ if (!headers_sent()) {
         error_reporting(0);
     }
 
-    // Session cookie flags
     $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     if (PHP_VERSION_ID >= 70300) {
         session_set_cookie_params([
@@ -28,7 +26,6 @@ if (!headers_sent()) {
             'samesite' => 'Lax',
         ]);
     } else {
-        // Fallback for older PHP: best-effort
         ini_set('session.cookie_httponly', '1');
         ini_set('session.cookie_secure', $isSecure ? '1' : '0');
         ini_set('session.cookie_samesite', 'Lax');
@@ -53,6 +50,7 @@ require_once BASE_PATH . '/app/Models/User.php';
 // Controllers
 require_once BASE_PATH . '/app/Controllers/AuthController.php';
 require_once BASE_PATH . '/app/Controllers/DashboardController.php';
+require_once BASE_PATH . '/app/Controllers/ApiController.php';
 
 // ---------- Routing ----------
 $router = new Router($app['base_url']);
@@ -72,6 +70,9 @@ $router->post('/login', 'AuthController@login');
 $router->post('/logout', 'AuthController@logout');
 
 $router->get('/dashboard', 'DashboardController@index');
+
+// API for dashboard stats (protected)
+$router->get('/api/stats', 'ApiController@stats');
 
 // Dispatch
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
