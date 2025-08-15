@@ -51,12 +51,14 @@ require_once BASE_PATH . '/app/Models/Lookup.php';
 // Services
 require_once BASE_PATH . '/app/Services/Validator.php';
 require_once BASE_PATH . '/app/Services/ImageService.php';
+require_once BASE_PATH . '/app/Services/ActivityLog.php';
 
 // Controllers
 require_once BASE_PATH . '/app/Controllers/AuthController.php';
 require_once BASE_PATH . '/app/Controllers/DashboardController.php';
 require_once BASE_PATH . '/app/Controllers/ApiController.php';
 require_once BASE_PATH . '/app/Controllers/StudentController.php';
+require_once BASE_PATH . '/app/Controllers/AdminController.php';
 
 // ---------- Routing ----------
 $router = new Router($app['base_url']);
@@ -78,9 +80,9 @@ $router->get('/dashboard', 'DashboardController@index');
 
 // API
 $router->get('/api/stats', 'ApiController@stats');
-$router->get('/api/search', 'ApiController@search'); // <-- unified search endpoint
+$router->get('/api/search', 'ApiController@search');
 
-// Student CRUD
+// Student CRUD + extras
 $router->get('/students', 'StudentController@index');
 $router->get('/students/create', 'StudentController@create');
 $router->post('/students', 'StudentController@store');
@@ -88,5 +90,10 @@ $router->get('/students/show', 'StudentController@show');      // ?id=#
 $router->get('/students/edit', 'StudentController@edit');      // ?id=#
 $router->post('/students/update', 'StudentController@update'); // ?id=#
 $router->post('/students/delete', 'StudentController@destroy'); // ?id=#
+$router->get('/students/export', 'StudentController@export');  // CSV export
+$router->get('/students/print', 'StudentController@print');    // print-friendly view ?id=#
+
+// Admin utilities
+$router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

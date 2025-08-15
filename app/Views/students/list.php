@@ -9,10 +9,10 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
       <p class="text-muted">Manage student records (add, view, edit, delete). <small class="text-muted ms-2">Tip: press <kbd>/</kbd> to open search.</small></p>
     </div>
     <div class="col-auto d-flex align-items-center gap-2">
-      <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Add Student
-      </a>
-      <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="bi bi-search"></i> Search</button>
+      <a href="<?= $baseUrl; ?>/dashboard" class="btn btn-outline-secondary">Dashboard</a>
+      <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Student</a>
+      <a href="#" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="bi bi-search"></i> Search</a>
+      <a href="<?= $baseUrl; ?>/students/export?all=1" class="btn btn-outline-success"><i class="bi bi-file-earmark-arrow-down"></i> Export CSV</a>
     </div>
   </div>
 
@@ -118,6 +118,9 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
   </div>
 </div>
 
+<!-- include search modal markup -->
+<?php require BASE_PATH . '/app/Views/students/search_modal.php'; ?>
+
 <script>
 // delete handler (uses SweetAlert)
 document.querySelectorAll('.btn-delete').forEach(btn => {
@@ -137,21 +140,5 @@ document.querySelectorAll('.btn-delete').forEach(btn => {
       }
     });
   });
-});
-
-// Keyboard shortcut: '/' opens search modal unless focused on input
-document.addEventListener('keydown', function (e) {
-  if (e.key === '/' && document.activeElement && ['INPUT', 'TEXTAREA'].indexOf(document.activeElement.tagName) === -1) {
-    e.preventDefault();
-    const modal = document.getElementById('searchModal');
-    if (modal) {
-      const bsModal = new bootstrap.Modal(modal);
-      bsModal.show();
-      setTimeout(() => {
-        const input = modal.querySelector('#searchInput');
-        input?.focus();
-      }, 120);
-    }
-  }
 });
 </script>

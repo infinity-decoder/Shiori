@@ -7,9 +7,11 @@
       <h1 class="h4 mb-0">Student Details</h1>
       <p class="text-muted">Read-only view.</p>
     </div>
-    <div class="col-auto">
+    <div class="col-auto d-flex gap-2">
+      <a href="<?= $baseUrl; ?>/dashboard" class="btn btn-outline-secondary">Dashboard</a>
       <a href="<?= $baseUrl; ?>/students" class="btn btn-outline-secondary">Back to list</a>
-      <a href="<?= $baseUrl; ?>/students/edit?id=<?= $student['id']; ?>" class="btn btn-secondary ms-2">Edit</a>
+      <a href="<?= $baseUrl; ?>/students/print?id=<?= $student['id']; ?>" class="btn btn-outline-primary" target="_blank"><i class="bi bi-printer"></i> Print</a>
+      <a href="<?= $baseUrl; ?>/students/edit?id=<?= $student['id']; ?>" class="btn btn-secondary ms-1">Edit</a>
     </div>
   </div>
 
@@ -51,3 +53,6 @@
     </div>
   </div>
 </div>
+
+<!-- include search modal -->
+<?php require BASE_PATH . '/app/Views/students/search_modal.php'; ?>

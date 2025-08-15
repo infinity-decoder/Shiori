@@ -66,11 +66,18 @@
           <p class="text-muted">Use the cards and controls to add/search student records.</p>
           <div class="d-grid gap-2 d-md-block">
             <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary me-2"><i class="bi bi-plus-lg me-1"></i> Add Record</a>
+            <a href="<?= $baseUrl; ?>/students" class="btn btn-outline-primary me-2"><i class="bi bi-list-ul me-1"></i> List Students</a>
 
             <!-- Search opens the modal included below -->
             <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal">
               <i class="bi bi-search me-1"></i> Search
             </button>
+
+            <?php if (Auth::user()['role'] === 'admin'): ?>
+              <a href="<?= $baseUrl; ?>/admin/backup" class="btn btn-outline-danger mt-2"><i class="bi bi-hdd-stack me-1"></i> Backup DB</a>
+            <?php endif; ?>
+
+            <a href="<?= $baseUrl; ?>/students/export?all=1" class="btn btn-outline-success mt-2"><i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV</a>
           </div>
         </div>
       </div>

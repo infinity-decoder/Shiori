@@ -10,7 +10,8 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
       <h1 class="h4"><?= $mode === 'create' ? 'Add Student' : 'Edit Student'; ?></h1>
       <p class="text-muted">Fill the form and save student details.</p>
     </div>
-    <div class="col-auto">
+    <div class="col-auto d-flex gap-2">
+      <a href="<?= $baseUrl; ?>/dashboard" class="btn btn-outline-secondary">Dashboard</a>
       <a href="<?= $baseUrl; ?>/students" class="btn btn-outline-secondary">Back to list</a>
     </div>
   </div>
@@ -28,7 +29,7 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
         <?php endif; ?>
 
         <div class="row g-3">
-          <!-- (same fields as before) -->
+          <!-- (fields unchanged from previous form) -->
           <div class="col-md-4">
             <label class="form-label">Roll No.</label>
             <input name="roll_no" class="form-control" value="<?= htmlspecialchars($student['roll_no'] ?? '') ?>" required>
@@ -155,18 +156,17 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
   </div>
 </div>
 
+<!-- include search modal markup so it's available on this page -->
+<?php require BASE_PATH . '/app/Views/students/search_modal.php'; ?>
+
 <script>
   // init flatpickr
   if (typeof flatpickr !== 'undefined') {
     flatpickr("#dob", { dateFormat: "Y-m-d", allowInput: true });
   }
 
-  // FilePond initialization (graceful: only if FilePond loaded)
   (function () {
     if (typeof FilePond === 'undefined') return;
-
-    // register any plugins if needed (file type validation etc)
-    // FilePond.setOptions can configure server endpoints for async upload. We're using simple form submit POST so no server config needed.
 
     const inputElement = document.getElementById('photoFile');
     const pond = FilePond.create(inputElement, {
@@ -176,10 +176,5 @@ $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/studen
       acceptedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
       labelIdle: 'Drag & Drop your photo or <span class="filepond--label-action">Browse</span>',
     });
-
-    // When user removes file, FilePond will simply clear the input — form submit will have no file
-    // No extra handling required here.
-
-    // If browser doesn't support FilePond, the regular <input> remains usable.
   })();
 </script>

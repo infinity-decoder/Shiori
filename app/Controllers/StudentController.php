@@ -44,7 +44,6 @@ class StudentController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/students/create');
         }
-
         if (!CSRF::verify($_POST['csrf_token'] ?? null)) {
             Auth::flash('error', 'Invalid session token.');
             $this->redirect('/students/create');
@@ -59,6 +58,7 @@ class StudentController extends Controller
         $data = $validation['data'];
         try {
             $id = Student::create($data);
+
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
                 if ($saved['ok']) {
@@ -68,6 +68,15 @@ class StudentController extends Controller
                     $this->redirect('/students');
                 }
             }
+
+            // Activity log
+            $user = Auth::user();
+            ActivityLog::log($user['id'] ?? null, 'create', 'student', $id, json_encode([
+                'student_name' => $data['student_name'] ?? '',
+                'roll_no' => $data['roll_no'] ?? '',
+                'enrollment_no' => $data['enrollment_no'] ?? '',
+            ]));
+
             Auth::flash('success', 'Student added successfully.');
             $this->redirect('/students');
         } catch (PDOException $e) {
@@ -109,7 +118,6 @@ class StudentController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/students');
         }
-
         if (!CSRF::verify($_POST['csrf_token'] ?? null)) {
             Auth::flash('error', 'Invalid session token.');
             $this->redirect('/students');
@@ -137,7 +145,6 @@ class StudentController extends Controller
         try {
             Student::update($id, $data);
 
-            // handle photo replacement
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 if (!empty($student['photo_path'])) {
                     ImageService::deleteStudentPhoto($student['photo_path']);
@@ -150,6 +157,13 @@ class StudentController extends Controller
                     $this->redirect('/students');
                 }
             }
+
+            // Activity log
+            $user = Auth::user();
+            ActivityLog::log($user['id'] ?? null, 'update', 'student', $id, json_encode([
+                'student_name' => $data['student_name'] ?? '',
+                'roll_no' => $data['roll_no'] ?? '',
+            ]));
 
             Auth::flash('success', 'Student updated successfully.');
             $this->redirect('/students');
@@ -211,11 +225,115 @@ class StudentController extends Controller
             if (!empty($student['photo_path'])) {
                 ImageService::deleteStudentPhoto($student['photo_path']);
             }
+
+            // Activity log
+            ActivityLog::log($user['id'] ?? null, 'delete', 'student', $id, json_encode([
+                'student_name' => $student['student_name'] ?? '',
+                'roll_no' => $student['roll_no'] ?? '',
+            ]));
+
             Auth::flash('success', 'Student deleted.');
             $this->redirect('/students');
         } catch (PDOException $e) {
             Auth::flash('error', 'Could not delete student: ' . $e->getMessage());
             $this->redirect('/students');
         }
+    }
+
+    /**
+     * Export CSV of students.
+     * Use ?all=1 to export entire table; otherwise paging parameters are used.
+     */
+    public function export(): void
+    {
+        $this->requireAuth();
+        $all = (int)($_GET['all'] ?? 0);
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $perPage = (int)($_GET['per_page'] ?? 10);
+        if (!in_array($perPage, [10,25,50], true)) $perPage = 10;
+
+        $filename = 'students_export_' . date('Ymd_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $out = fopen('php://output', 'w');
+
+        // CSV header
+        fputcsv($out, ['ID','Roll No','Enrollment No','Class','Section','Name','DOB','B.form','Father Name','CNIC','Mobile','Email','Category','Family Category','Address','Photo Path','Created At','Updated At']);
+
+        $pdo = DB::get();
+
+        if ($all === 1) {
+            $stmt = $pdo->query("
+                SELECT s.*, c.name AS class_name, sec.name AS section_name, cat.name AS category_name, fc.name AS fcategory_name
+                FROM students s
+                LEFT JOIN classes c ON s.class_id = c.id
+                LEFT JOIN sections sec ON s.section_id = sec.id
+                LEFT JOIN categories cat ON s.category_id = cat.id
+                LEFT JOIN family_categories fc ON s.fcategory_id = fc.id
+                ORDER BY s.id DESC
+            ");
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                fputcsv($out, [
+                    $row['id'],$row['roll_no'],$row['enrollment_no'],$row['class_name'] ?? $row['class_id'],
+                    $row['section_name'] ?? $row['section_id'],$row['student_name'],$row['dob'],$row['b_form'],
+                    $row['father_name'],$row['cnic'],$row['mobile'],$row['email'],$row['category_name'] ?? '',
+                    $row['fcategory_name'] ?? '',$row['address'],$row['photo_path'],$row['created_at'],$row['updated_at']
+                ]);
+            }
+        } else {
+            $offset = ($page - 1) * $perPage;
+            $stmt = $pdo->prepare("
+                SELECT s.*, c.name AS class_name, sec.name AS section_name, cat.name AS category_name, fc.name AS fcategory_name
+                FROM students s
+                LEFT JOIN classes c ON s.class_id = c.id
+                LEFT JOIN sections sec ON s.section_id = sec.id
+                LEFT JOIN categories cat ON s.category_id = cat.id
+                LEFT JOIN family_categories fc ON s.fcategory_id = fc.id
+                ORDER BY s.id DESC
+                LIMIT :limit OFFSET :offset
+            ");
+            $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                fputcsv($out, [
+                    $row['id'],$row['roll_no'],$row['enrollment_no'],$row['class_name'] ?? $row['class_id'],
+                    $row['section_name'] ?? $row['section_id'],$row['student_name'],$row['dob'],$row['b_form'],
+                    $row['father_name'],$row['cnic'],$row['mobile'],$row['email'],$row['category_name'] ?? '',
+                    $row['fcategory_name'] ?? '',$row['address'],$row['photo_path'],$row['created_at'],$row['updated_at']
+                ]);
+            }
+        }
+
+        fclose($out);
+        exit;
+    }
+
+    /**
+     * Print-friendly student profile view (standalone)
+     * GET /students/print?id=#
+     */
+    public function print(): void
+    {
+        $this->requireAuth();
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            Auth::flash('error', 'Invalid student id.');
+            $this->redirect('/students');
+        }
+        $student = Student::find($id);
+        if (!$student) {
+            Auth::flash('error', 'Student not found.');
+            $this->redirect('/students');
+        }
+
+        // Render a standalone print-friendly HTML (not using the main layout)
+        $appCfg = require BASE_PATH . '/config/app.php';
+        $baseUrl = rtrim($appCfg['base_url'], '/');
+        // Make $student & $baseUrl available to the view file
+        include BASE_PATH . '/app/Views/students/print.php';
+        exit;
     }
 }
