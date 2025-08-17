@@ -22,29 +22,129 @@ class Student
         return $row ?: null;
     }
 
-    public static function paginate(int $page = 1, int $perPage = 10): array
+        public static function paginate(int $page = 1, int $perPage = 10, array $filters = [], string $sort = 'id_desc'): array
     {
         $offset = max(0, ($page - 1) * $perPage);
         $pdo = DB::get();
-        $stmt = $pdo->prepare("
+
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['class_id'])) {
+            $where[] = 's.class_id = :class_id';
+            $params[':class_id'] = (int)$filters['class_id'];
+        }
+        if (!empty($filters['section_id'])) {
+            $where[] = 's.section_id = :section_id';
+            $params[':section_id'] = (int)$filters['section_id'];
+        }
+        if (!empty($filters['q'])) {
+            $where[] = '(s.student_name LIKE :q OR s.father_name LIKE :q OR s.enrollment_no LIKE :q OR s.roll_no LIKE :q)';
+            $params[':q'] = '%' . $filters['q'] . '%';
+        }
+
+        $whereSql = '';
+        if (!empty($where)) {
+            $whereSql = 'WHERE ' . implode(' AND ', $where);
+        }
+
+        // Determine ORDER BY clause
+        switch ($sort) {
+            case 'name_asc':
+                $order = 's.student_name ASC';
+                break;
+            case 'name_desc':
+                $order = 's.student_name DESC';
+                break;
+            case 'roll_asc':
+                $order = 's.roll_no ASC';
+                break;
+            case 'roll_desc':
+                $order = 's.roll_no DESC';
+                break;
+            case 'id_asc':
+                $order = 's.id ASC';
+                break;
+            case 'id_desc':
+            default:
+                $order = 's.id DESC';
+                break;
+        }
+
+        $sql = "
             SELECT s.id, s.roll_no, s.enrollment_no, s.session, s.student_name, s.class_id, s.section_id,
+                   s.father_name, s.mobile,
                    c.name AS class_name, sec.name AS section_name, s.photo_path
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
             LEFT JOIN sections sec ON s.section_id = sec.id
-            ORDER BY s.id DESC
+            {$whereSql}
+            ORDER BY {$order}
             LIMIT :limit OFFSET :offset
-        ");
+        ";
+
+        $stmt = $pdo->prepare($sql);
+
+        // bind filter params
+        foreach ($params as $k => $v) {
+            if (is_int($v) || ctype_digit((string)$v)) {
+                $stmt->bindValue($k, (int)$v, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($k, $v, PDO::PARAM_STR);
+            }
+        }
+
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
     public static function countAll(): int
     {
         $pdo = DB::get();
         $stmt = $pdo->query("SELECT COUNT(*) FROM students");
+        return (int)$stmt->fetchColumn();
+    }
+
+        public static function countFiltered(array $filters = []): int
+    {
+        $pdo = DB::get();
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['class_id'])) {
+            $where[] = 's.class_id = :class_id';
+            $params[':class_id'] = (int)$filters['class_id'];
+        }
+        if (!empty($filters['section_id'])) {
+            $where[] = 's.section_id = :section_id';
+            $params[':section_id'] = (int)$filters['section_id'];
+        }
+        if (!empty($filters['q'])) {
+            $where[] = '(s.student_name LIKE :q OR s.father_name LIKE :q OR s.enrollment_no LIKE :q OR s.roll_no LIKE :q)';
+            $params[':q'] = '%' . $filters['q'] . '%';
+        }
+
+        $whereSql = '';
+        if (!empty($where)) {
+            $whereSql = 'WHERE ' . implode(' AND ', $where);
+        }
+
+        $sql = "SELECT COUNT(*) FROM students s {$whereSql}";
+        $stmt = $pdo->prepare($sql);
+
+        foreach ($params as $k => $v) {
+            if (is_int($v) || ctype_digit((string)$v)) {
+                $stmt->bindValue($k, (int)$v, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($k, $v, PDO::PARAM_STR);
+            }
+        }
+
+        $stmt->execute();
         return (int)$stmt->fetchColumn();
     }
 

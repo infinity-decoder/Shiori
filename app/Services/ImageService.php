@@ -1,4 +1,5 @@
 <?php
+// app/Services/ImageService.php
 class ImageService
 {
     // Allowed MIME types and extensions
@@ -26,7 +27,7 @@ class ImageService
             return ['ok' => false, 'error' => 'File too large (max 3 MB).'];
         }
 
-        $info = getimagesize($file['tmp_name']);
+        $info = @getimagesize($file['tmp_name']);
         if ($info === false) {
             return ['ok' => false, 'error' => 'Not a valid image file.'];
         }
@@ -50,8 +51,8 @@ class ImageService
             return ['ok' => false, 'error' => $valid['error']];
         }
 
-        $info = getimagesize($file['tmp_name']);
-        $mime = $info['mime'];
+        $info = @getimagesize($file['tmp_name']);
+        $mime = $info['mime'] ?? 'image/jpeg';
         $ext = self::$allowed[$mime] ?? 'jpg';
 
         $uploadsDir = BASE_PATH . '/public/uploads/students';
@@ -65,16 +66,47 @@ class ImageService
         $filename = $studentId . '.' . $ext;
         $dest = $uploadsDir . DIRECTORY_SEPARATOR . $filename;
 
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
-            return ['ok' => false, 'error' => 'Failed to move uploaded file.'];
+        // Primary move; try move_uploaded_file, otherwise fallback to copy
+        $moved = false;
+        if (is_uploaded_file($file['tmp_name']) && @move_uploaded_file($file['tmp_name'], $dest)) {
+            $moved = true;
+        } else {
+            // fallback: copy then unlink
+            if (@copy($file['tmp_name'], $dest)) {
+                @unlink($file['tmp_name']);
+                $moved = true;
+            }
+        }
+
+        if (!$moved) {
+            return ['ok' => false, 'error' => 'Failed to move uploaded file. Check permissions on uploads folder.'];
+        }
+
+        // Make file readable by webserver
+        if (function_exists('chmod')) {
+            @chmod($dest, 0644);
         }
 
         // Generate thumbnail (max 300x300) saved as thumb_{id}.jpg for consistent display
         $thumbPath = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . $studentId . '.jpg';
+
         $resized = self::createThumbnail($dest, $thumbPath, 300, 300);
         if (!$resized['ok']) {
-            // Not critical; keep original
+            // Not critical: log the error (but keep original)
+            try {
+                $logDir = BASE_PATH . '/storage/logs';
+                if (is_dir($logDir)) {
+                    @file_put_contents($logDir . '/image_errors.log', '['.date('c').'] Thumb error for '.$filename.': '.$resized['error'].PHP_EOL, FILE_APPEND);
+                }
+            } catch (Throwable $_) {
+                // ignore
+            }
+            // still consider upload OK
             return ['ok' => true, 'filename' => $filename];
+        }
+
+        if (function_exists('chmod')) {
+            @chmod($thumbPath, 0644);
         }
 
         return ['ok' => true, 'filename' => $filename];
@@ -82,36 +114,46 @@ class ImageService
 
     private static function createThumbnail(string $srcPath, string $destPath, int $maxW, int $maxH): array
     {
-        $info = getimagesize($srcPath);
+        $info = @getimagesize($srcPath);
         if ($info === false) {
             return ['ok' => false, 'error' => 'Cannot read image for thumbnail.'];
         }
-        $mime = $info['mime'];
+        $mime = $info['mime'] ?? 'image/jpeg';
 
+        // If GD functions are missing, abort thumbnail creation gracefully
+        if (!function_exists('imagecreatetruecolor') || !function_exists('imagecopyresampled') || !function_exists('imagejpeg')) {
+            return ['ok' => false, 'error' => 'GD extension not available for thumbnail generation.'];
+        }
+
+        // Create source image resource based on mime
         switch ($mime) {
             case 'image/jpeg':
-                $srcImg = imagecreatefromjpeg($srcPath);
+                $srcImg = @imagecreatefromjpeg($srcPath);
                 break;
             case 'image/png':
-                $srcImg = imagecreatefrompng($srcPath);
+                $srcImg = @imagecreatefrompng($srcPath);
                 break;
             case 'image/webp':
                 if (function_exists('imagecreatefromwebp')) {
-                    $srcImg = imagecreatefromwebp($srcPath);
+                    $srcImg = @imagecreatefromwebp($srcPath);
                 } else {
-                    // fallback convert via JPEG if webp functions not available
-                    $srcImg = imagecreatefromstring(file_get_contents($srcPath));
+                    $srcImg = @imagecreatefromstring(file_get_contents($srcPath));
                 }
                 break;
             default:
-                $srcImg = imagecreatefromstring(file_get_contents($srcPath));
+                $srcImg = @imagecreatefromstring(file_get_contents($srcPath));
         }
+
         if (!$srcImg) {
             return ['ok' => false, 'error' => 'Failed to create image resource.'];
         }
 
         $w = imagesx($srcImg);
         $h = imagesy($srcImg);
+        if ($w <= 0 || $h <= 0) {
+            imagedestroy($srcImg);
+            return ['ok' => false, 'error' => 'Invalid image dimensions.'];
+        }
 
         // maintain aspect ratio
         $ratio = min($maxW / $w, $maxH / $h, 1);
@@ -119,12 +161,16 @@ class ImageService
         $newH = (int)round($h * $ratio);
 
         $thumb = imagecreatetruecolor($newW, $newH);
-        // for PNG/WebP preserve transparency
-        imagefill($thumb, 0, 0, imagecolorallocate($thumb, 255, 255, 255));
+
+        // White background for JPEG; preserve for PNG/WebP by copying background where possible
+        $white = imagecolorallocate($thumb, 255, 255, 255);
+        imagefill($thumb, 0, 0, $white);
+
         imagecopyresampled($thumb, $srcImg, 0, 0, 0, 0, $newW, $newH, $w, $h);
 
         // Save as JPEG (most compatible) with quality 85
-        $saved = imagejpeg($thumb, $destPath, 85);
+        $saved = @imagejpeg($thumb, $destPath, 85);
+
         imagedestroy($thumb);
         imagedestroy($srcImg);
 
@@ -141,7 +187,9 @@ class ImageService
     {
         $uploadsDir = BASE_PATH . '/public/uploads/students';
         $orig = $uploadsDir . DIRECTORY_SEPARATOR . $filename;
-        $thumb = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . pathinfo($filename, PATHINFO_FILENAME) . '.jpg';
+        // derive base name (filename without ext) to find thumb_{basename}.jpg
+        $base = pathinfo($filename, PATHINFO_FILENAME);
+        $thumb = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . $base . '.jpg';
 
         if (is_file($orig)) {
             @unlink($orig);

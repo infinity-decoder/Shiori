@@ -1,7 +1,7 @@
 <?php
 class StudentController extends Controller
 {
-    public function index(): void
+        public function index(): void
     {
         $this->requireAuth();
 
@@ -9,8 +9,25 @@ class StudentController extends Controller
         $perPage = (int)($_GET['per_page'] ?? 10);
         if (!in_array($perPage, [10,25,50], true)) $perPage = 10;
 
-        $total = Student::countAll();
-        $students = Student::paginate($page, $perPage);
+        // Filters
+        $filters = [];
+        if (!empty($_GET['class_id'])) {
+            $filters['class_id'] = (int)$_GET['class_id'];
+        }
+        if (!empty($_GET['section_id'])) {
+            $filters['section_id'] = (int)$_GET['section_id'];
+        }
+        $q = trim((string)($_GET['q'] ?? ''));
+        if ($q !== '') {
+            $filters['q'] = $q;
+        }
+
+        $allowedSorts = ['id_desc','id_asc','name_asc','name_desc','roll_asc','roll_desc'];
+        $sort = $_GET['sort'] ?? 'id_desc';
+        if (!in_array($sort, $allowedSorts, true)) $sort = 'id_desc';
+
+        $total = Student::countFiltered($filters);
+        $students = Student::paginate($page, $perPage, $filters, $sort);
 
         $this->view('students/list.php', [
             'title' => 'Students | Shiori',
@@ -18,8 +35,13 @@ class StudentController extends Controller
             'page' => $page,
             'per_page' => $perPage,
             'total' => $total,
+            'classes' => Lookup::getClasses(),
+            'sections' => Lookup::getSections(),
+            'filters' => $filters,
+            'sort' => $sort,
         ]);
     }
+
 
     public function create(): void
     {
@@ -241,9 +263,9 @@ class StudentController extends Controller
     }
 
     /**
-     * Export CSV of students.
-     * Use ?all=1 to export entire table; otherwise paging parameters are used.
-     */
+ * Export CSV of students.
+ * Use ?all=1 to export entire table; otherwise paging parameters are used.
+ */
     public function export(): void
     {
         $this->requireAuth();
@@ -259,8 +281,12 @@ class StudentController extends Controller
 
         $out = fopen('php://output', 'w');
 
-        // CSV header
-        fputcsv($out, ['ID','Roll No','Enrollment No','Class','Section','Name','DOB','B.form','Father Name','CNIC','Mobile','Email','Category','Family Category','Address','Photo Path','Created At','Updated At']);
+        // CSV header - added BPS, Religion, Caste, Domicile
+        fputcsv($out, [
+            'ID','Roll No','Enrollment No','Class','Section','Name','DOB','B.form',
+            'BPS','Religion','Caste','Domicile',
+            'Father Name','CNIC','Mobile','Email','Category','Family Category','Address','Photo Path','Created At','Updated At'
+        ]);
 
         $pdo = DB::get();
 
@@ -276,10 +302,31 @@ class StudentController extends Controller
             ");
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 fputcsv($out, [
-                    $row['id'],$row['roll_no'],$row['enrollment_no'],$row['class_name'] ?? $row['class_id'],
-                    $row['section_name'] ?? $row['section_id'],$row['student_name'],$row['dob'],$row['b_form'],
-                    $row['father_name'],$row['cnic'],$row['mobile'],$row['email'],$row['category_name'] ?? '',
-                    $row['fcategory_name'] ?? '',$row['address'],$row['photo_path'],$row['created_at'],$row['updated_at']
+                    $row['id'],
+                    $row['roll_no'],
+                    $row['enrollment_no'],
+                    $row['class_name'] ?? $row['class_id'],
+                    $row['section_name'] ?? $row['section_id'],
+                    $row['student_name'] ?? '',
+                    $row['dob'] ?? '',
+                    $row['b_form'] ?? '',
+
+                    // NEW fields
+                    $row['bps'] ?? '',
+                    $row['religion'] ?? '',
+                    $row['caste'] ?? '',
+                    $row['domicile'] ?? '',
+
+                    $row['father_name'] ?? '',
+                    $row['cnic'] ?? '',
+                    $row['mobile'] ?? '',
+                    $row['email'] ?? '',
+                    $row['category_name'] ?? '',
+                    $row['fcategory_name'] ?? '',
+                    $row['address'] ?? '',
+                    $row['photo_path'] ?? '',
+                    $row['created_at'] ?? '',
+                    $row['updated_at'] ?? ''
                 ]);
             }
         } else {
@@ -299,10 +346,31 @@ class StudentController extends Controller
             $stmt->execute();
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 fputcsv($out, [
-                    $row['id'],$row['roll_no'],$row['enrollment_no'],$row['class_name'] ?? $row['class_id'],
-                    $row['section_name'] ?? $row['section_id'],$row['student_name'],$row['dob'],$row['b_form'],
-                    $row['father_name'],$row['cnic'],$row['mobile'],$row['email'],$row['category_name'] ?? '',
-                    $row['fcategory_name'] ?? '',$row['address'],$row['photo_path'],$row['created_at'],$row['updated_at']
+                    $row['id'],
+                    $row['roll_no'],
+                    $row['enrollment_no'],
+                    $row['class_name'] ?? $row['class_id'],
+                    $row['section_name'] ?? $row['section_id'],
+                    $row['student_name'] ?? '',
+                    $row['dob'] ?? '',
+                    $row['b_form'] ?? '',
+
+                    // NEW fields
+                    $row['bps'] ?? '',
+                    $row['religion'] ?? '',
+                    $row['caste'] ?? '',
+                    $row['domicile'] ?? '',
+
+                    $row['father_name'] ?? '',
+                    $row['cnic'] ?? '',
+                    $row['mobile'] ?? '',
+                    $row['email'] ?? '',
+                    $row['category_name'] ?? '',
+                    $row['fcategory_name'] ?? '',
+                    $row['address'] ?? '',
+                    $row['photo_path'] ?? '',
+                    $row['created_at'] ?? '',
+                    $row['updated_at'] ?? ''
                 ]);
             }
         }
@@ -310,6 +378,8 @@ class StudentController extends Controller
         fclose($out);
         exit;
     }
+
+
 
     /**
      * Print-friendly student profile view (standalone)

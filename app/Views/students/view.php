@@ -1,44 +1,60 @@
 <?php
-// $student passed from controller
+// app/Views/students/view.php
+// $student is provided by controller; $baseUrl is available from layout
 ?>
 <div class="container">
-  <div class="row mb-3">
+  <div class="row mb-3 align-items-center">
     <div class="col">
-      <h1 class="h4 mb-0">Student Details</h1>
-      <p class="text-muted">Read-only view.</p>
+      <h1 class="h4 mb-0">View Student</h1>
+      <p class="text-muted">Profile for student #<?= htmlspecialchars($student['id'] ?? ''); ?></p>
     </div>
     <div class="col-auto d-flex gap-2">
-      <a href="<?= $baseUrl; ?>/dashboard" class="btn btn-outline-secondary">Dashboard</a>
       <a href="<?= $baseUrl; ?>/students" class="btn btn-outline-secondary">Back to list</a>
-      <a href="<?= $baseUrl; ?>/students/print?id=<?= $student['id']; ?>" class="btn btn-outline-primary" target="_blank"><i class="bi bi-printer"></i> Print</a>
-      <a href="<?= $baseUrl; ?>/students/edit?id=<?= $student['id']; ?>" class="btn btn-secondary ms-1">Edit</a>
+      <a href="<?= $baseUrl; ?>/students/print?id=<?= (int)($student['id'] ?? 0); ?>" class="btn btn-outline-secondary">Print</a>
+      <a href="<?= $baseUrl; ?>/students/edit?id=<?= (int)($student['id'] ?? 0); ?>" class="btn btn-primary">Edit</a>
     </div>
   </div>
 
   <div class="card card-soft">
     <div class="card-body">
-      <div class="row g-3">
+      <div class="row">
         <div class="col-md-3">
-          <?php if (!empty($student['photo_path'])): ?>
-            <img src="<?= $baseUrl; ?>/uploads/students/<?= rawurlencode($student['photo_path']); ?>" alt="photo" style="width:100%; border-radius:6px;">
-          <?php else: ?>
-            <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:6px;">
-              <i class="bi bi-person fs-1 text-muted"></i>
-            </div>
-          <?php endif; ?>
+          <div class="mb-3">
+            <?php if (!empty($student['photo_path'])): ?>
+              <?php
+                // Prefer thumbnail if it exists, otherwise use original upload.
+                $thumbFile = BASE_PATH . '/public/uploads/students/thumb_' . ((int)$student['id']) . '.jpg';
+                $thumbUrl  = rtrim($baseUrl, '/') . '/uploads/students/thumb_' . rawurlencode($student['id']) . '.jpg';
+                $origUrl   = rtrim($baseUrl, '/') . '/uploads/students/' . rawurlencode($student['photo_path']);
+                $showThumb = is_file($thumbFile);
+              ?>
+              <img src="<?= $showThumb ? $thumbUrl : $origUrl; ?>" alt="photo" class="img-fluid rounded" style="width:100%; height:auto;">
+            <?php else: ?>
+              <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:6px;">
+                <i class="bi bi-person fs-1 text-muted"></i>
+              </div>
+            <?php endif; ?>
+          </div>
         </div>
 
         <div class="col-md-9">
           <table class="table table-borderless mb-0">
-            <tr><th style="width:200px">ID</th><td><?= htmlspecialchars($student['id']); ?></td></tr>
-            <tr><th>Roll No.</th><td><?= htmlspecialchars($student['roll_no']); ?></td></tr>
-            <tr><th>Enrollment No.</th><td><?= htmlspecialchars($student['enrollment_no']); ?></td></tr>
+            <tr><th style="width:200px">ID</th><td><?= htmlspecialchars($student['id'] ?? ''); ?></td></tr>
+            <tr><th>Roll No.</th><td><?= htmlspecialchars($student['roll_no'] ?? ''); ?></td></tr>
+            <tr><th>Enrollment No.</th><td><?= htmlspecialchars($student['enrollment_no'] ?? ''); ?></td></tr>
             <tr><th>Session</th><td><?= htmlspecialchars($student['session'] ?? ''); ?></td></tr>
-            <tr><th>Name</th><td><?= htmlspecialchars($student['student_name']); ?></td></tr>
-            <tr><th>Class / Section</th><td><?= htmlspecialchars($student['class_name'] ?? $student['class_id']); ?> / <?= htmlspecialchars($student['section_name'] ?? $student['section_id']); ?></td></tr>
+            <tr><th>Name</th><td><?= htmlspecialchars($student['student_name'] ?? ''); ?></td></tr>
+            <tr><th>Class / Section</th><td><?= htmlspecialchars($student['class_name'] ?? $student['class_id'] ?? ''); ?> / <?= htmlspecialchars($student['section_name'] ?? $student['section_id'] ?? ''); ?></td></tr>
             <tr><th>Date of Birth</th><td><?= htmlspecialchars($student['dob'] ?? ''); ?></td></tr>
             <tr><th>B.form</th><td><?= htmlspecialchars($student['b_form'] ?? ''); ?></td></tr>
-            <tr><th>Father Name</th><td><?= htmlspecialchars($student['father_name']); ?></td></tr>
+
+            <!-- NEW: fields that were previously missing -->
+            <tr><th>BPS</th><td><?= htmlspecialchars($student['bps'] ?? ''); ?></td></tr>
+            <tr><th>Religion</th><td><?= htmlspecialchars($student['religion'] ?? ''); ?></td></tr>
+            <tr><th>Caste</th><td><?= htmlspecialchars($student['caste'] ?? ''); ?></td></tr>
+            <tr><th>Domicile</th><td><?= htmlspecialchars($student['domicile'] ?? ''); ?></td></tr>
+
+            <tr><th>Father Name</th><td><?= htmlspecialchars($student['father_name'] ?? ''); ?></td></tr>
             <tr><th>CNIC</th><td><?= htmlspecialchars($student['cnic'] ?? ''); ?></td></tr>
             <tr><th>Mobile</th><td><?= htmlspecialchars($student['mobile'] ?? ''); ?></td></tr>
             <tr><th>Father Occupation</th><td><?= htmlspecialchars($student['father_occupation'] ?? ''); ?></td></tr>
@@ -55,5 +71,5 @@
   </div>
 </div>
 
-<!-- include search modal -->
+<!-- include search modal (keeps behavior consistent with other pages) -->
 <?php require BASE_PATH . '/app/Views/students/search_modal.php'; ?>

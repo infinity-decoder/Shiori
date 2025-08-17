@@ -1,4 +1,5 @@
 <?php
+// app/Views/students/list.php
 // $students, $page, $per_page, $total are provided
 $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
 ?>
@@ -20,15 +21,54 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
     <div class="card-body p-2">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
-          <form method="GET" action="<?= $baseUrl; ?>/students" class="d-flex align-items-center gap-2 mb-0">
-            <label class="small text-muted mb-0">Show</label>
-            <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()" style="width:90px;">
-              <option value="10" <?= $per_page == 10 ? 'selected' : ''; ?>>10</option>
-              <option value="25" <?= $per_page == 25 ? 'selected' : ''; ?>>25</option>
-              <option value="50" <?= $per_page == 50 ? 'selected' : ''; ?>>50</option>
-            </select>
-            <input type="hidden" name="page" value="1">
+                    <form method="GET" action="<?= $baseUrl; ?>/students" class="row gx-2 gy-2 align-items-center mb-0">
+            <div class="col-auto">
+              <select name="class_id" class="form-select form-select-sm">
+                <option value="">All Classes</option>
+                <?php foreach (($classes ?? []) as $c): ?>
+                  <option value="<?= $c['id']; ?>" <?= (isset($filters['class_id']) && $filters['class_id'] == $c['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($c['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="col-auto">
+              <select name="section_id" class="form-select form-select-sm">
+                <option value="">All Sections</option>
+                <?php foreach (($sections ?? []) as $sct): ?>
+                  <option value="<?= $sct['id']; ?>" <?= (isset($filters['section_id']) && $filters['section_id'] == $sct['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($sct['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
+            <div class="col-auto">
+              <input type="text" name="q" value="<?= htmlspecialchars($filters['q'] ?? ''); ?>" class="form-control form-control-sm" placeholder="Search name, father, roll">
+            </div>
+
+            <div class="col-auto">
+              <select name="sort" class="form-select form-select-sm">
+                <option value="id_desc" <?= ($sort ?? '') === 'id_desc' ? 'selected' : ''; ?>>Newest</option>
+                <option value="id_asc" <?= ($sort ?? '') === 'id_asc' ? 'selected' : ''; ?>>Oldest</option>
+                <option value="name_asc" <?= ($sort ?? '') === 'name_asc' ? 'selected' : ''; ?>>Name A→Z</option>
+                <option value="name_desc" <?= ($sort ?? '') === 'name_desc' ? 'selected' : ''; ?>>Name Z→A</option>
+                <option value="roll_asc" <?= ($sort ?? '') === 'roll_asc' ? 'selected' : ''; ?>>Roll Asc</option>
+                <option value="roll_desc" <?= ($sort ?? '') === 'roll_desc' ? 'selected' : ''; ?>>Roll Desc</option>
+              </select>
+            </div>
+
+            <div class="col-auto">
+              <select name="per_page" class="form-select form-select-sm">
+                <option value="10" <?= $per_page == 10 ? 'selected' : ''; ?>>10</option>
+                <option value="25" <?= $per_page == 25 ? 'selected' : ''; ?>>25</option>
+                <option value="50" <?= $per_page == 50 ? 'selected' : ''; ?>>50</option>
+              </select>
+            </div>
+
+            <div class="col-auto">
+              <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+              <a href="<?= $baseUrl; ?>/students" class="btn btn-sm btn-outline-secondary">Reset</a>
+            </div>
           </form>
+
         </div>
 
         <div class="small text-muted">
@@ -57,15 +97,30 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
           <?php else: ?>
             <?php foreach ($students as $s): ?>
             <tr>
+              <?php
+                // Determine image to show: prefer thumbnail, then original, else placeholder
+                $uploadsDir = BASE_PATH . '/public/uploads/students';
+                $thumbName = 'thumb_' . ((int)$s['id']) . '.jpg';
+                $thumbPath = $uploadsDir . '/' . $thumbName;
+                $origFile  = $s['photo_path'] ?? '';
+                $origPath  = $uploadsDir . '/' . $origFile;
+                $imgUrl = null;
+                if (is_file($thumbPath)) {
+                    $imgUrl = $baseUrl . '/uploads/students/' . rawurlencode($thumbName);
+                } elseif ($origFile !== '' && is_file($origPath)) {
+                    $imgUrl = $baseUrl . '/uploads/students/' . rawurlencode($origFile);
+                }
+              ?>
               <td style="width:80px">
-                <?php if (!empty($s['photo_path'])): ?>
-                  <img src="<?= $baseUrl; ?>/uploads/students/<?= rawurlencode($s['photo_path']); ?>" alt="photo" style="height:56px; width:auto; border-radius:4px;">
+                <?php if ($imgUrl): ?>
+                  <img src="<?= $imgUrl; ?>" alt="photo" style="height:56px; width:auto; border-radius:4px;">
                 <?php else: ?>
                   <div class="bg-light text-muted d-inline-flex align-items-center justify-content-center" style="height:56px; width:56px; border-radius:4px;">
                     <i class="bi bi-person"></i>
                   </div>
                 <?php endif; ?>
               </td>
+
               <td><?= htmlspecialchars($s['roll_no']); ?></td>
               <td><?= htmlspecialchars($s['enrollment_no']); ?></td>
               <td><?= htmlspecialchars($s['student_name']); ?></td>
@@ -73,13 +128,10 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
               <td><?= htmlspecialchars($s['mobile'] ?? ''); ?></td>
               <td><?= htmlspecialchars($s['class_name'] ?? $s['class_id']); ?></td>
               <td><?= htmlspecialchars($s['section_name'] ?? $s['section_id']); ?></td>
+
               <td>
-                <a href="<?= $baseUrl; ?>/students/show?id=<?= $s['id']; ?>" class="btn btn-sm btn-outline-primary me-1">
-                  <i class="bi bi-eye"></i>
-                </a>
-                <a href="<?= $baseUrl; ?>/students/edit?id=<?= $s['id']; ?>" class="btn btn-sm btn-outline-secondary me-1">
-                  <i class="bi bi-pencil"></i>
-                </a>
+                <a href="<?= $baseUrl; ?>/students/show?id=<?= $s['id']; ?>" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-eye"></i></a>
+                <a href="<?= $baseUrl; ?>/students/edit?id=<?= $s['id']; ?>" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>
 
                 <form method="POST" action="<?= $baseUrl; ?>/students/delete?id=<?= $s['id']; ?>" class="d-inline-block delete-form" style="margin:0;">
                   <?= CSRF::field(); ?>
@@ -93,28 +145,38 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
         </table>
       </div>
 
-      <!-- Pagination (unchanged from previous) -->
+      <!-- Pagination (unchanged) -->
       <nav class="mt-3" aria-label="Student pagination">
         <ul class="pagination mb-0">
           <?php
             $start = max(1, $page - 3);
             $end = min(max(1, $totalPages), $page + 3);
-            if ($page > 1):
+
+            // base query preserves filters and sort for pagination links
+            $baseQuery = [];
+            if (!empty($filters['class_id'])) $baseQuery['class_id'] = $filters['class_id'];
+            if (!empty($filters['section_id'])) $baseQuery['section_id'] = $filters['section_id'];
+            if (!empty($filters['q'])) $baseQuery['q'] = $filters['q'];
+            if (!empty($sort)) $baseQuery['sort'] = $sort;
+            $baseQuery['per_page'] = $per_page;
           ?>
-            <li class="page-item"><a class="page-link" href="<?= $baseUrl; ?>/students?page=<?= $page-1; ?>&per_page=<?= $per_page; ?>">« Prev</a></li>
+
+          <?php if ($page > 1): ?>
+            <li class="page-item"><a class="page-link" href="<?= $baseUrl; ?>/students?<?= http_build_query(array_merge($baseQuery, ['page' => $page-1])); ?>">« Prev</a></li>
           <?php endif; ?>
 
           <?php for ($p = $start; $p <= $end; $p++): ?>
             <li class="page-item <?= $p === $page ? 'active' : ''; ?>">
-              <a class="page-link" href="<?= $baseUrl; ?>/students?page=<?= $p; ?>&per_page=<?= $per_page; ?>"><?= $p; ?></a>
+              <a class="page-link" href="<?= $baseUrl; ?>/students?<?= http_build_query(array_merge($baseQuery, ['page' => $p])); ?>"><?= $p; ?></a>
             </li>
           <?php endfor; ?>
 
           <?php if ($page < $totalPages): ?>
-            <li class="page-item"><a class="page-link" href="<?= $baseUrl; ?>/students?page=<?= $page+1; ?>&per_page=<?= $per_page; ?>">Next »</a></li>
+            <li class="page-item"><a class="page-link" href="<?= $baseUrl; ?>/students?<?= http_build_query(array_merge($baseQuery, ['page' => $page+1])); ?>">Next »</a></li>
           <?php endif; ?>
         </ul>
       </nav>
+
 
     </div>
   </div>
