@@ -24,11 +24,13 @@
   </style>
 </head>
 <body>
-  <div class="no-print" style="margin-bottom:10px;">
-    <button onclick="window.print()">Print</button>
-  </div>
+ 
+<div class="no-print" style="margin-bottom:10px;">
+  <button onclick="window.print()">Print</button>
+  <button onclick="history.back()">Back</button>
+</div>
 
-  <h2>Student Profile — #<?= htmlspecialchars($student['id']); ?></h2>
+  <h2>Student Profile —<?= htmlspecialchars($student['student_name']); ?></h2>
 
   <div class="profile">
     <div class="photo">
@@ -40,12 +42,13 @@
     </div>
     <div class="info">
       <table>
-        <tr><th>ID</th><td><?= htmlspecialchars($student['id']); ?></td></tr>
-        <tr><th>Name</th><td><?= htmlspecialchars($student['student_name']); ?></td></tr>
+        
+        
         <tr><th>Roll No</th><td><?= htmlspecialchars($student['roll_no']); ?></td></tr>
         <tr><th>Enrollment No</th><td><?= htmlspecialchars($student['enrollment_no']); ?></td></tr>
         <tr><th>Session</th><td><?= htmlspecialchars($student['session'] ?? ''); ?></td></tr>
         <tr><th>Class / Section</th><td><?= htmlspecialchars($student['class_name'] ?? $student['class_id']); ?> / <?= htmlspecialchars($student['section_name'] ?? $student['section_id']); ?></td></tr>
+        <tr><th>Name</th><td><?= htmlspecialchars($student['student_name']); ?></td></tr>
         <tr><th>Date of Birth</th><td><?= htmlspecialchars($student['dob'] ?? ''); ?></td></tr>
         <tr><th>B.form</th><td><?= htmlspecialchars($student['b_form'] ?? ''); ?></td></tr>
         <tr><th>Father Name</th><td><?= htmlspecialchars($student['father_name']); ?></td></tr>
@@ -55,6 +58,11 @@
         <tr><th>Category</th><td><?= htmlspecialchars($student['category_name'] ?? ''); ?></td></tr>
         <tr><th>Family Category</th><td><?= htmlspecialchars($student['fcategory_name'] ?? ''); ?></td></tr>
         <tr><th>Address</th><td><?= nl2br(htmlspecialchars($student['address'] ?? '')); ?></td></tr>
+        <tr><th>BPS</th><td><?= htmlspecialchars($student['bps'] ?? ''); ?></td></tr>
+        <tr><th>Religion</th><td><?= htmlspecialchars($student['religion'] ?? ''); ?></td></tr>
+        <tr><th>Caste</th><td><?= htmlspecialchars($student['caste'] ?? ''); ?></td></tr>
+        <tr><th>Domicile</th><td><?= htmlspecialchars($student['domicile'] ?? ''); ?></td></tr>
+
       </table>
     </div>
   </div>
