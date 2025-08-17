@@ -49,37 +49,44 @@ class Student
     }
 
     public static function create(array $data): int
-    {
-        $pdo = DB::get();
-        $stmt = $pdo->prepare("
-            INSERT INTO students
-                (roll_no, enrollment_no, session, class_id, section_id, student_name, dob, b_form,
-                 father_name, cnic, mobile, address, father_occupation, category_id, fcategory_id, email, photo_path)
-            VALUES
-                (:roll_no, :enrollment_no, :session, :class_id, :section_id, :student_name, :dob, :b_form,
-                 :father_name, :cnic, :mobile, :address, :father_occupation, :category_id, :fcategory_id, :email, :photo_path)
-        ");
-        $stmt->execute([
-            ':roll_no' => $data['roll_no'] ?? '',
-            ':enrollment_no' => $data['enrollment_no'] ?? '',
-            ':session' => $data['session'] ?? null,
-            ':class_id' => $data['class_id'],
-            ':section_id' => $data['section_id'],
-            ':student_name' => $data['student_name'],
-            ':dob' => $data['dob'] ?: null,
-            ':b_form' => $data['b_form'] ?? null,
-            ':father_name' => $data['father_name'],
-            ':cnic' => $data['cnic'] ?? null,
-            ':mobile' => $data['mobile'] ?? null,
-            ':address' => $data['address'] ?? null,
-            ':father_occupation' => $data['father_occupation'] ?? null,
-            ':category_id' => $data['category_id'],
-            ':fcategory_id' => $data['fcategory_id'],
-            ':email' => $data['email'] ?? null,
-            ':photo_path' => $data['photo_path'] ?? null,
-        ]);
-        return (int)$pdo->lastInsertId();
-    }
+{
+    $pdo = DB::get();
+    $stmt = $pdo->prepare("
+        INSERT INTO students
+            (roll_no, enrollment_no, session, class_id, section_id, student_name, dob, b_form,
+             father_name, cnic, mobile, address, father_occupation, category_id, fcategory_id, email, photo_path,
+             bps, religion, caste, domicile)
+        VALUES
+            (:roll_no, :enrollment_no, :session, :class_id, :section_id, :student_name, :dob, :b_form,
+             :father_name, :cnic, :mobile, :address, :father_occupation, :category_id, :fcategory_id, :email, :photo_path,
+             :bps, :religion, :caste, :domicile)
+    ");
+    $stmt->execute([
+        ':roll_no' => $data['roll_no'] ?? '',
+        ':enrollment_no' => $data['enrollment_no'] ?? '',
+        ':session' => $data['session'] ?? null,
+        ':class_id' => $data['class_id'],
+        ':section_id' => $data['section_id'],
+        ':student_name' => $data['student_name'],
+        ':dob' => $data['dob'] ?: null,
+        ':b_form' => $data['b_form'] ?? null,
+        ':father_name' => $data['father_name'],
+        ':cnic' => $data['cnic'] ?? null,
+        ':mobile' => $data['mobile'] ?? null,
+        ':address' => $data['address'] ?? null,
+        ':father_occupation' => $data['father_occupation'] ?? null,
+        ':category_id' => $data['category_id'],
+        ':fcategory_id' => $data['fcategory_id'],
+        ':email' => $data['email'] ?? null,
+        ':photo_path' => $data['photo_path'] ?? null,
+        ':bps' => $data['bps'] ?? null,
+        ':religion' => $data['religion'] ?? null,
+        ':caste' => $data['caste'] ?? null,
+        ':domicile' => $data['domicile'] ?? null,
+    ]);
+    return (int)$pdo->lastInsertId();
+}
+
 
     public static function update(int $id, array $data): void
     {
@@ -89,11 +96,17 @@ class Student
         $params = [':id' => $id];
 
         foreach ($data as $k => $v) {
-            if (in_array($k, ['roll_no','enrollment_no','session','class_id','section_id','student_name','dob','b_form','father_name','cnic','mobile','address','father_occupation','category_id','fcategory_id','email','photo_path'], true)) {
-                $fields[] = "`$k` = :$k";
-                $params[":$k"] = ($v === '') ? null : $v;
-            }
+        if (in_array($k, [
+            'roll_no','enrollment_no','session','class_id','section_id','student_name','dob',
+            'b_form','father_name','cnic','mobile','address','father_occupation',
+            'category_id','fcategory_id','email','photo_path',
+            'bps','religion','caste','domicile'
+        ], true)) {
+            $fields[] = "`$k` = :$k";
+            $params[":$k"] = ($v === '') ? null : $v;
         }
+    }
+
 
         if (empty($fields)) {
             return;

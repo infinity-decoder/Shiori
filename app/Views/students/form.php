@@ -107,6 +107,30 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
                 <label class="form-label">Father Occupation</label>
                 <input name="father_occupation" class="form-control form-control-lg" value="<?= htmlspecialchars($student['father_occupation'] ?? '') ?>">
               </div>
+                            <!-- BPS (after father_occupation) -->
+              <div class="col-md-3">
+                <label class="form-label">BPS</label>
+                <input name="bps" class="form-control form-control-lg" value="<?= htmlspecialchars($student['bps'] ?? '') ?>" placeholder="e.g. 17">
+              </div>
+
+              <!-- Religion -->
+              <div class="col-md-3">
+                <label class="form-label">Religion</label>
+                <input name="religion" class="form-control form-control-lg" value="<?= htmlspecialchars($student['religion'] ?? '') ?>" placeholder="e.g. Islam">
+              </div>
+
+              <!-- Caste -->
+              <div class="col-md-3">
+                <label class="form-label">Caste</label>
+                <input name="caste" class="form-control form-control-lg" value="<?= htmlspecialchars($student['caste'] ?? '') ?>" placeholder="e.g. Sheikh">
+              </div>
+
+              <!-- Domicile -->
+              <div class="col-md-3">
+                <label class="form-label">Domicile</label>
+                <input name="domicile" class="form-control form-control-lg" value="<?= htmlspecialchars($student['domicile'] ?? '') ?>" placeholder="e.g. Punjab">
+              </div>
+
 
               <div class="col-md-6">
                 <label class="form-label">Category <span class="text-danger">*</span></label>

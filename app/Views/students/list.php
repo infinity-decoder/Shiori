@@ -40,12 +40,12 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
         <table class="table table-striped mb-0">
           <thead class="table-light">
             <tr>
-              <th style="width:60px">ID</th>
               <th>Photo</th>
               <th>Roll</th>
               <th>Enrollment</th>
-              <th>Session</th>
               <th>Name</th>
+              <th>Father Name</th>
+              <th>Mobile Number</th>
               <th>Class</th>
               <th>Section</th>
               <th style="width:180px">Actions</th>
@@ -57,7 +57,6 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
           <?php else: ?>
             <?php foreach ($students as $s): ?>
             <tr>
-              <td><?= htmlspecialchars($s['id']); ?></td>
               <td style="width:80px">
                 <?php if (!empty($s['photo_path'])): ?>
                   <img src="<?= $baseUrl; ?>/uploads/students/<?= rawurlencode($s['photo_path']); ?>" alt="photo" style="height:56px; width:auto; border-radius:4px;">
@@ -69,8 +68,9 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
               </td>
               <td><?= htmlspecialchars($s['roll_no']); ?></td>
               <td><?= htmlspecialchars($s['enrollment_no']); ?></td>
-              <td><?= htmlspecialchars($s['session'] ?? ''); ?></td>
               <td><?= htmlspecialchars($s['student_name']); ?></td>
+              <td><?= htmlspecialchars($s['father_name'] ?? ''); ?></td>
+              <td><?= htmlspecialchars($s['mobile'] ?? ''); ?></td>
               <td><?= htmlspecialchars($s['class_name'] ?? $s['class_id']); ?></td>
               <td><?= htmlspecialchars($s['section_name'] ?? $s['section_id']); ?></td>
               <td>

@@ -84,6 +84,44 @@ class Validator
 
         $data['address'] = $get('address');
         $data['father_occupation'] = $get('father_occupation');
+        // BPS: optional, numeric-ish (allow 1-3 digits)
+        $bpsRaw = $get('bps');
+        if ($bpsRaw !== '') {
+            if (!preg_match('/^\d{1,3}$/', $bpsRaw)) {
+                $errors[] = 'BPS must be a number (1-3 digits).';
+            } else {
+                $data['bps'] = (int)$bpsRaw;
+            }
+        } else {
+            $data['bps'] = null;
+        }
+
+                // Religion
+        $religion = $get('religion');
+        if ($religion !== '') {
+            if (mb_strlen($religion) > 100) $errors[] = 'Religion is too long.';
+            $data['religion'] = $religion;
+        } else {
+            $data['religion'] = null;
+        }
+
+        // Caste
+        $caste = $get('caste');
+        if ($caste !== '') {
+            if (mb_strlen($caste) > 100) $errors[] = 'Caste is too long.';
+            $data['caste'] = $caste;
+        } else {
+            $data['caste'] = null;
+        }
+
+        // Domicile
+        $domicile = $get('domicile');
+        if ($domicile !== '') {
+            if (mb_strlen($domicile) > 100) $errors[] = 'Domicile is too long.';
+            $data['domicile'] = $domicile;
+        } else {
+            $data['domicile'] = null;
+        }
         $data['category_id'] = (int)$get('category_id');
         $data['fcategory_id'] = (int)$get('fcategory_id');
 
@@ -97,6 +135,7 @@ class Validator
         } else {
             $data['email'] = null;
         }
+        
 
         // photo validation (if present)
         if (!empty($files['photo']) && $files['photo']['error'] !== UPLOAD_ERR_NO_FILE) {

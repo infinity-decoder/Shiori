@@ -1,8 +1,10 @@
 <?php
-// This file is included in dashboard view. $baseUrl is available there.
-// We'll expose CSRF token for JS to use on delete forms.
+// app/Views/students/search_modal.php
+// Included by dashboard and students list views.
+// Exposes a CSRF token for delete actions rendered by JS inside the modal.
 $csrfToken = CSRF::token();
 ?>
+
 <!-- Search Modal -->
 <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -11,9 +13,14 @@ $csrfToken = CSRF::token();
         <h5 class="modal-title" id="searchModalLabel"><i class="bi bi-search"></i> Search Students</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
       <div class="modal-body">
         <div class="mb-3">
-          <input id="searchInput" class="form-control form-control-lg" placeholder="Type name, father name, id, roll, enrollment, CNIC or phone..." autocomplete="off">
+          <input
+            id="searchInput"
+            class="form-control form-control-lg"
+            placeholder="Type name, father name, id, roll, enrollment, CNIC or phone."
+            autocomplete="off">
         </div>
 
         <div id="searchResultsArea">
@@ -37,11 +44,12 @@ $csrfToken = CSRF::token();
             </table>
           </div>
 
-          <nav>
+          <nav aria-label="Search pagination">
             <ul class="pagination" id="searchPagination"></ul>
           </nav>
         </div>
       </div>
+
       <div class="modal-footer">
         <small class="text-muted me-auto">Quick search across ID, names and identifiers.</small>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -52,73 +60,62 @@ $csrfToken = CSRF::token();
 
 <script>
 (function () {
-  const baseUrl = <?= json_encode($baseUrl); ?>;
+  const baseUrl   = <?= json_encode($baseUrl); ?>;
   const csrfToken = <?= json_encode($csrfToken); ?>;
-  const input = document.getElementById('searchInput');
-  const tbody = document.querySelector('#searchResultsTable tbody');
+
+  const input        = document.getElementById('searchInput');
+  const tbody        = document.querySelector('#searchResultsTable tbody');
   const paginationEl = document.getElementById('searchPagination');
-  const modalEl = document.getElementById('searchModal');
+  const modalEl      = document.getElementById('searchModal');
 
   let debounceTimer = null;
-  let currentQuery = '';
-  let currentPage = 1;
-  let lastTotal = 0;
-  let perPage = 10;
+  let currentQuery  = '';
+  let currentPage   = 1;
+  let perPage       = 10;
+  let lastTotal     = 0;
 
-  function emptyResults() {
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">Type to search...</td></tr>';
+  function showTypingHint() {
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">Type to search.</td></tr>';
     paginationEl.innerHTML = '';
   }
 
-  function noData() {
+  function showNoResults() {
     tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No results found.</td></tr>';
     paginationEl.innerHTML = '';
   }
 
-  function buildRow(item) {
-    const tr = document.createElement('tr');
+  function td(text) {
+    const cell = document.createElement('td');
+    cell.textContent = text ?? '';
+    return cell;
+  }
 
-    const tdId = document.createElement('td'); tdId.textContent = item.id; tr.appendChild(tdId);
-
-    const tdName = document.createElement('td'); tdName.textContent = item.student_name; tr.appendChild(tdName);
-    const tdFather = document.createElement('td'); tdFather.textContent = item.father_name; tr.appendChild(tdFather);
-    const tdRoll = document.createElement('td'); tdRoll.textContent = item.roll_no; tr.appendChild(tdRoll);
-    const tdEnroll = document.createElement('td'); tdEnroll.textContent = item.enrollment_no; tr.appendChild(tdEnroll);
-    const tdCnic = document.createElement('td'); tdCnic.textContent = item.cnic; tr.appendChild(tdCnic);
-    const tdMobile = document.createElement('td'); tdMobile.textContent = item.mobile; tr.appendChild(tdMobile);
-    const tdClass = document.createElement('td'); tdClass.textContent = item.class_name; tr.appendChild(tdClass);
-    const tdSection = document.createElement('td'); tdSection.textContent = item.section_name; tr.appendChild(tdSection);
-
+  function buildActionsCell(item) {
     const tdActions = document.createElement('td');
 
-    // view
-    const aView = document.createElement('a');
-    aView.className = 'btn btn-sm btn-outline-primary me-1';
-    aView.href = item.view_url;
-    aView.title = 'View';
-    aView.innerHTML = '<i class="bi bi-eye"></i>';
-    tdActions.appendChild(aView);
+    const btnView = document.createElement('a');
+    btnView.href = item.view_url;
+    btnView.className = 'btn btn-sm btn-outline-primary me-1';
+    btnView.innerHTML = '<i class="bi bi-eye"></i>';
+    tdActions.appendChild(btnView);
 
-    // edit
-    const aEdit = document.createElement('a');
-    aEdit.className = 'btn btn-sm btn-outline-secondary me-1';
-    aEdit.href = item.edit_url;
-    aEdit.title = 'Edit';
-    aEdit.innerHTML = '<i class="bi bi-pencil"></i>';
-    tdActions.appendChild(aEdit);
+    const btnEdit = document.createElement('a');
+    btnEdit.href = item.edit_url;
+    btnEdit.className = 'btn btn-sm btn-outline-secondary me-1';
+    btnEdit.innerHTML = '<i class="bi bi-pencil"></i>';
+    tdActions.appendChild(btnEdit);
 
-    // delete form (submits POST to delete endpoint)
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = item.delete_url;
     form.className = 'd-inline-block';
     form.style.margin = '0';
 
-    const inputCsrf = document.createElement('input');
-    inputCsrf.type = 'hidden';
-    inputCsrf.name = 'csrf_token';
-    inputCsrf.value = csrfToken;
-    form.appendChild(inputCsrf);
+    const hidden = document.createElement('input');
+    hidden.type  = 'hidden';
+    hidden.name  = 'csrf_token';
+    hidden.value = csrfToken;
+    form.appendChild(hidden);
 
     const btnDelete = document.createElement('button');
     btnDelete.type = 'button';
@@ -126,12 +123,154 @@ $csrfToken = CSRF::token();
     btnDelete.innerHTML = '<i class="bi bi-trash"></i>';
     form.appendChild(btnDelete);
 
-    tdActions.appendChild(form);
-    tr.appendChild(tdActions);
-
-    // delete handler
-    btnDelete.addEventListener('click', function (e) {
+    form.addEventListener('click', function (e) {
+      const target = e.target.closest('.btn-delete');
+      if (!target) return;
       e.preventDefault();
-      Swal.fire({
-        title: 'Delete record?',
-        text: 'This action cannot be undone.',
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Delete record?',
+          text: 'This action cannot be undone.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, delete',
+          cancelButtonText: 'Cancel',
+        }).then(res => { if (res.isConfirmed) form.submit(); });
+      } else {
+        if (confirm('Delete this record?')) form.submit();
+      }
+    });
+
+    tdActions.appendChild(form);
+    return tdActions;
+  }
+
+  function renderResults(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      showNoResults();
+      return;
+    }
+    tbody.innerHTML = '';
+    for (const item of items) {
+      const tr = document.createElement('tr');
+      tr.appendChild(td(item.id));
+      tr.appendChild(td(item.student_name));
+      tr.appendChild(td(item.father_name));
+      tr.appendChild(td(item.roll_no));
+      tr.appendChild(td(item.enrollment_no));
+      tr.appendChild(td(item.cnic));
+      tr.appendChild(td(item.mobile));
+      tr.appendChild(td(item.class_name));
+      tr.appendChild(td(item.section_name));
+      tr.appendChild(buildActionsCell(item));
+      tbody.appendChild(tr);
+    }
+  }
+
+  function buildPagination(total, perPage, page) {
+    const totalPages = Math.max(1, Math.ceil(total / Math.max(1, perPage)));
+    paginationEl.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const addPage = (p, label, disabled = false, active = false) => {
+      const li = document.createElement('li');
+      li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+      const a = document.createElement('a');
+      a.className = 'page-link';
+      a.href = '#';
+      a.dataset.page = String(p);
+      a.textContent = label;
+      li.appendChild(a);
+      paginationEl.appendChild(li);
+    };
+
+    addPage(page - 1, '« Prev', page <= 1, false);
+
+    const start = Math.max(1, page - 3);
+    const end   = Math.min(totalPages, page + 3);
+    for (let p = start; p <= end; p++) {
+      addPage(p, String(p), false, p === page);
+    }
+
+    addPage(page + 1, 'Next »', page >= totalPages, false);
+  }
+
+  async function runSearch(pageToLoad = 1) {
+    currentPage = pageToLoad;
+
+    if (!currentQuery) {
+      showTypingHint();
+      return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">Searching…</td></tr>';
+    paginationEl.innerHTML = '';
+
+    const params = new URLSearchParams({
+      q: currentQuery,
+      page: String(currentPage),
+      per_page: String(perPage),
+    });
+
+    try {
+      const res = await fetch(baseUrl + '/api/search?' + params.toString(), { credentials: 'same-origin' });
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location = baseUrl + '/login';
+          return;
+        }
+        throw new Error('Search failed: ' + res.status);
+      }
+      const data = await res.json();
+      lastTotal = data.total ?? 0;
+      perPage   = data.per_page ?? perPage;
+
+      renderResults(data.results || []);
+      buildPagination(lastTotal, perPage, data.page ?? currentPage);
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-danger">Error performing search.</td></tr>';
+      console.error(err);
+    }
+  }
+
+  // Debounced typing
+  input.addEventListener('input', function () {
+    const q = this.value.trim();
+    currentQuery = q;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      if (!currentQuery) {
+        showTypingHint();
+      } else {
+        runSearch(1);
+      }
+    }, 250);
+  });
+
+  // Pagination click (event delegation)
+  paginationEl.addEventListener('click', function (e) {
+    const a = e.target.closest('a[data-page]');
+    if (!a) return;
+    e.preventDefault();
+    const page = parseInt(a.dataset.page || '1', 10);
+    if (!isNaN(page)) runSearch(page);
+  });
+
+  // Modal lifecycle: reset on hide; focus on show
+  modalEl.addEventListener('hidden.bs.modal', function () {
+    input.value = '';
+    currentQuery = '';
+    currentPage = 1;
+    lastTotal = 0;
+    showTypingHint();
+  });
+
+  modalEl.addEventListener('shown.bs.modal', function () {
+    setTimeout(() => input.focus(), 120);
+    showTypingHint();
+  });
+
+  // Initialize state in case modal is already in DOM
+  showTypingHint();
+})();
+</script>
