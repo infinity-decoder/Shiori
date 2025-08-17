@@ -20,21 +20,16 @@
       <div class="row">
         <div class="col-md-3">
           <div class="mb-3">
-            <?php if (!empty($student['photo_path'])): ?>
-              <?php
-                // Prefer thumbnail if it exists, otherwise use original upload.
-                $thumbFile = BASE_PATH . '/public/uploads/students/thumb_' . ((int)$student['id']) . '.jpg';
-                $thumbUrl  = rtrim($baseUrl, '/') . '/uploads/students/thumb_' . rawurlencode($student['id']) . '.jpg';
-                $origUrl   = rtrim($baseUrl, '/') . '/uploads/students/' . rawurlencode($student['photo_path']);
-                $showThumb = is_file($thumbFile);
-              ?>
-              <img src="<?= $showThumb ? $thumbUrl : $origUrl; ?>" alt="photo" class="img-fluid rounded" style="width:100%; height:auto;">
-            <?php else: ?>
-              <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:6px;">
-                <i class="bi bi-person fs-1 text-muted"></i>
-              </div>
-            <?php endif; ?>
-          </div>
+                  <?php
+                  $photoUrl = ImageService::getPhotoUrl($student['photo_path'] ?? null, (int)$student['id']);
+                  if ($photoUrl): ?>
+                      <img src="<?= $baseUrl . $photoUrl; ?>" alt="photo" class="img-fluid rounded" style="width:100%; height:auto;">
+                  <?php else: ?>
+                      <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:6px;">
+                          <i class="bi bi-person fs-1 text-muted"></i>
+                      </div>
+                  <?php endif; ?>
+            </div>
         </div>
 
         <div class="col-md-9">
@@ -48,19 +43,19 @@
             <tr><th>Date of Birth</th><td><?= htmlspecialchars($student['dob'] ?? ''); ?></td></tr>
             <tr><th>B.form</th><td><?= htmlspecialchars($student['b_form'] ?? ''); ?></td></tr>
 
-            <!-- NEW: fields that were previously missing -->
-            <tr><th>BPS</th><td><?= htmlspecialchars($student['bps'] ?? ''); ?></td></tr>
-            <tr><th>Religion</th><td><?= htmlspecialchars($student['religion'] ?? ''); ?></td></tr>
-            <tr><th>Caste</th><td><?= htmlspecialchars($student['caste'] ?? ''); ?></td></tr>
-            <tr><th>Domicile</th><td><?= htmlspecialchars($student['domicile'] ?? ''); ?></td></tr>
-
             <tr><th>Father Name</th><td><?= htmlspecialchars($student['father_name'] ?? ''); ?></td></tr>
             <tr><th>CNIC</th><td><?= htmlspecialchars($student['cnic'] ?? ''); ?></td></tr>
             <tr><th>Mobile</th><td><?= htmlspecialchars($student['mobile'] ?? ''); ?></td></tr>
             <tr><th>Father Occupation</th><td><?= htmlspecialchars($student['father_occupation'] ?? ''); ?></td></tr>
+            <tr><th>BPS</th><td><?= htmlspecialchars($student['bps'] ?? ''); ?></td></tr>
             <tr><th>Category</th><td><?= htmlspecialchars($student['category_name'] ?? ''); ?></td></tr>
             <tr><th>Family Category</th><td><?= htmlspecialchars($student['fcategory_name'] ?? ''); ?></td></tr>
             <tr><th>Email</th><td><?= htmlspecialchars($student['email'] ?? ''); ?></td></tr>
+              <!-- NEW: fields that were previously missing -->
+            
+            <tr><th>Religion</th><td><?= htmlspecialchars($student['religion'] ?? ''); ?></td></tr>
+            <tr><th>Caste</th><td><?= htmlspecialchars($student['caste'] ?? ''); ?></td></tr>
+            <tr><th>Domicile</th><td><?= htmlspecialchars($student['domicile'] ?? ''); ?></td></tr>
             <tr><th>Address</th><td><?= nl2br(htmlspecialchars($student['address'] ?? '')); ?></td></tr>
             <tr><th>Created</th><td><?= htmlspecialchars($student['created_at'] ?? ''); ?></td></tr>
             <tr><th>Updated</th><td><?= htmlspecialchars($student['updated_at'] ?? ''); ?></td></tr>
