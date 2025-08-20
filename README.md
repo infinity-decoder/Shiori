@@ -1,5 +1,5 @@
 
-# Shiori — Lightweight Student Management System (PHP)
+# Shiori — Lightweight Student Management System
 
 Shiori is a fast, minimal, and modern **student management system** built with vanilla PHP and a tiny MVC-ish structure. It’s designed to run locally (Laragon/XAMPP) or on a basic LAMP stack and focuses on **speed, simplicity, and safety**.
 
