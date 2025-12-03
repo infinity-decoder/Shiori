@@ -55,6 +55,21 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
       <i class="bi bi-journal-bookmark-fill text-primary"></i>
       <span class="ms-1"><?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></span>
     </a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="<?= $baseUrl; ?>/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="<?= $baseUrl; ?>/students">Students</a>
+        </li>
+        <?php if (Auth::user()['role'] === 'admin'): ?>
+          <li class="nav-item">
+            <a class="nav-link" href="<?= $baseUrl; ?>/activity">Activity Log</a>
+          </li>
+        <?php endif; ?>
+      </ul>
+    </div>
 
     <div class="ms-auto d-flex align-items-center">
       <div class="me-3 text-muted small">Signed in as <strong><?= htmlspecialchars(Auth::user()['username']); ?></strong></div>

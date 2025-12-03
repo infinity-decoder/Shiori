@@ -58,6 +58,7 @@ require_once BASE_PATH . '/app/Controllers/AuthController.php';
 require_once BASE_PATH . '/app/Controllers/DashboardController.php';
 require_once BASE_PATH . '/app/Controllers/ApiController.php';
 require_once BASE_PATH . '/app/Controllers/StudentController.php';
+require_once BASE_PATH . '/app/Controllers/ActivityController.php';
 require_once BASE_PATH . '/app/Controllers/AdminController.php';
 
 // ---------- Routing ----------
@@ -92,6 +93,9 @@ $router->post('/students/update', 'StudentController@update'); // ?id=#
 $router->post('/students/delete', 'StudentController@destroy'); // ?id=#
 $router->get('/students/export', 'StudentController@export');  // CSV export
 $router->get('/students/print', 'StudentController@print');    // print-friendly view ?id=#
+
+// Activity Log
+$router->get('/activity', 'ActivityController@index');
 
 // Admin utilities
 $router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)

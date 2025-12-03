@@ -92,12 +92,12 @@ class StudentController extends Controller
             }
 
             // Activity log
-            $user = Auth::user();
-            ActivityLog::log($user['id'] ?? null, 'create', 'student', $id, json_encode([
+            require_once BASE_PATH . '/app/Services/ActivityLogger.php';
+            ActivityLogger::log('create', 'student', $id, [
                 'student_name' => $data['student_name'] ?? '',
                 'roll_no' => $data['roll_no'] ?? '',
                 'enrollment_no' => $data['enrollment_no'] ?? '',
-            ]));
+            ]);
 
             Auth::flash('success', 'Student added successfully.');
             $this->redirect('/students');
@@ -181,11 +181,11 @@ class StudentController extends Controller
             }
 
             // Activity log
-            $user = Auth::user();
-            ActivityLog::log($user['id'] ?? null, 'update', 'student', $id, json_encode([
+            require_once BASE_PATH . '/app/Services/ActivityLogger.php';
+            ActivityLogger::log('update', 'student', $id, [
                 'student_name' => $data['student_name'] ?? '',
                 'roll_no' => $data['roll_no'] ?? '',
-            ]));
+            ]);
 
             Auth::flash('success', 'Student updated successfully.');
             $this->redirect('/students');
@@ -249,10 +249,11 @@ class StudentController extends Controller
             }
 
             // Activity log
-            ActivityLog::log($user['id'] ?? null, 'delete', 'student', $id, json_encode([
+            require_once BASE_PATH . '/app/Services/ActivityLogger.php';
+            ActivityLogger::log('delete', 'student', $id, [
                 'student_name' => $student['student_name'] ?? '',
                 'roll_no' => $student['roll_no'] ?? '',
-            ]));
+            ]);
 
             Auth::flash('success', 'Student deleted.');
             $this->redirect('/students');

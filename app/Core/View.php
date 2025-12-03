@@ -4,6 +4,7 @@ class View
     public static function render(string $template, array $data = []): void
     {
         $app     = require BASE_PATH . '/config/app.php';
+        require_once BASE_PATH . '/app/Core/Helpers.php';
         $baseUrl = rtrim($app['base_url'], '/');
 
         $viewFile = BASE_PATH . '/app/Views/' . ltrim($template, '/');
