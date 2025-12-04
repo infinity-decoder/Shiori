@@ -5,6 +5,23 @@ define('BASE_PATH', dirname(__DIR__));
 
 $app = require BASE_PATH . '/config/app.php';
 
+// Check for installer
+if (!file_exists(BASE_PATH . '/config/database.php')) {
+    // Only allow installer routes
+    require_once BASE_PATH . '/app/Core/Controller.php';
+    require_once BASE_PATH . '/app/Core/View.php';
+    require_once BASE_PATH . '/app/Controllers/InstallerController.php';
+    
+    $uri = $_SERVER['REQUEST_URI'];
+    // Simple routing for installer
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        (new InstallerController())->install();
+    } else {
+        (new InstallerController())->index();
+    }
+    exit;
+}
+
 if (!headers_sent()) {
     if (!empty($app['debug'])) {
         ini_set('display_errors', '1');
@@ -60,6 +77,9 @@ require_once BASE_PATH . '/app/Controllers/ApiController.php';
 require_once BASE_PATH . '/app/Controllers/StudentController.php';
 require_once BASE_PATH . '/app/Controllers/ActivityController.php';
 require_once BASE_PATH . '/app/Controllers/AdminController.php';
+require_once BASE_PATH . '/app/Controllers/FieldController.php';
+
+require_once BASE_PATH . '/app/Models/Field.php';
 
 // ---------- Routing ----------
 $router = new Router($app['base_url']);
@@ -92,10 +112,19 @@ $router->get('/students/edit', 'StudentController@edit');      // ?id=#
 $router->post('/students/update', 'StudentController@update'); // ?id=#
 $router->post('/students/delete', 'StudentController@destroy'); // ?id=#
 $router->get('/students/export', 'StudentController@export');  // CSV export
+$router->get('/students/import', 'StudentController@import');
+$router->post('/students/import', 'StudentController@processImport');
+$router->get('/students/thumbnail', 'StudentController@thumbnail'); // ?id=#
 $router->get('/students/print', 'StudentController@print');    // print-friendly view ?id=#
 
 // Activity Log
 $router->get('/activity', 'ActivityController@index');
+
+// Fields Management
+$router->get('/fields', 'FieldController@index');
+$router->post('/fields/store', 'FieldController@store');
+$router->get('/fields/toggle', 'FieldController@toggle');
+$router->get('/fields/delete', 'FieldController@delete');
 
 // Admin utilities
 $router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)

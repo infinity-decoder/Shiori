@@ -46,16 +46,25 @@ class StudentController extends Controller
     public function create(): void
     {
         $this->requireAuth();
+        if (Auth::isViewer()) {
+            Auth::flash('error', 'Viewers cannot create students.');
+            $this->redirect('/students');
+        }
         $lookups = [
             'classes'        => Lookup::getClasses(),
             'sections'       => Lookup::getSections(),
             'categories'     => Lookup::getCategories(),
             'familyCategories' => Lookup::getFamilyCategories(),
         ];
+        // Get active fields
+        require_once BASE_PATH . '/app/Models/Field.php';
+        $fields = Field::getAll(true);
+        
         $this->view('students/form.php', [
             'title'   => 'Add Student | Shiori',
             'student' => null,
             'lookups' => $lookups,
+            'fields'  => $fields,
             'mode'    => 'create',
         ]);
     }
@@ -63,6 +72,10 @@ class StudentController extends Controller
     public function store(): void
     {
         $this->requireAuth();
+        if (Auth::isViewer()) {
+            Auth::flash('error', 'Viewers cannot create students.');
+            $this->redirect('/students');
+        }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/students/create');
         }
@@ -84,7 +97,11 @@ class StudentController extends Controller
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
                 if ($saved['ok']) {
-                    Student::update($id, ['photo_path' => $saved['filename']]);
+                    $updateData = ['photo_path' => $saved['filename']];
+                    if (!empty($saved['thumbnail_blob'])) {
+                        $updateData['thumbnail_blob'] = $saved['thumbnail_blob'];
+                    }
+                    Student::update($id, $updateData);
                 } else {
                     Auth::flash('error', 'Saved student but photo upload failed: ' . $saved['error']);
                     $this->redirect('/students');
@@ -110,6 +127,10 @@ class StudentController extends Controller
     public function edit(): void
     {
         $this->requireAuth();
+        if (Auth::isViewer()) {
+            Auth::flash('error', 'Viewers cannot edit students.');
+            $this->redirect('/students');
+        }
         $id = (int)($_GET['id'] ?? 0);
         if ($id <= 0) {
             Auth::flash('error', 'Invalid student id.');
@@ -126,10 +147,15 @@ class StudentController extends Controller
             'categories'     => Lookup::getCategories(),
             'familyCategories' => Lookup::getFamilyCategories(),
         ];
+        // Get active fields
+        require_once BASE_PATH . '/app/Models/Field.php';
+        $fields = Field::getAll(true);
+
         $this->view('students/form.php', [
             'title'   => 'Edit Student | Shiori',
             'student' => $student,
             'lookups' => $lookups,
+            'fields'  => $fields,
             'mode'    => 'edit',
         ]);
     }
@@ -137,6 +163,10 @@ class StudentController extends Controller
     public function update(): void
     {
         $this->requireAuth();
+        if (Auth::isViewer()) {
+            Auth::flash('error', 'Viewers cannot edit students.');
+            $this->redirect('/students');
+        }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/students');
         }
@@ -236,8 +266,7 @@ class StudentController extends Controller
         }
 
         // Role-based delete: only admin allowed
-        $user = Auth::user();
-        if (empty($user['role']) || $user['role'] !== 'admin') {
+        if (!Auth::isAdmin()) {
             Auth::flash('error', 'You do not have permission to delete records.');
             $this->redirect('/students');
         }
@@ -261,6 +290,87 @@ class StudentController extends Controller
             Auth::flash('error', 'Could not delete student: ' . $e->getMessage());
             $this->redirect('/students');
         }
+    }
+
+    public function import(): void
+    {
+        $this->requireAuth();
+        if (Auth::isViewer()) {
+            Auth::flash('error', 'Viewers cannot import data.');
+            $this->redirect('/students');
+        }
+        $this->view('students/import.php', ['title' => 'Import Students | Shiori']);
+    }
+
+    public function processImport(): void
+    {
+        $this->requireAuth();
+        if (Auth::isViewer()) {
+            $this->redirect('/students');
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['csv_file'])) {
+            $this->redirect('/students/import');
+        }
+
+        $file = $_FILES['csv_file'];
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            Auth::flash('error', 'File upload failed.');
+            $this->redirect('/students/import');
+        }
+
+        $handle = fopen($file['tmp_name'], 'r');
+        if (!$handle) {
+            Auth::flash('error', 'Could not open file.');
+            $this->redirect('/students/import');
+        }
+
+        // Skip header
+        fgetcsv($handle);
+
+        $count = 0;
+        $errors = [];
+        $rowNum = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNum++;
+            // Basic mapping: Roll, Enrollment, Name, Father Name, ClassID, SectionID
+            // Expected format: Roll, Enrollment, Name, Father, ClassID, SectionID
+            if (count($row) < 6) {
+                $errors[] = "Row $rowNum: Not enough columns.";
+                continue;
+            }
+
+            $data = [
+                'roll_no' => $row[0],
+                'enrollment_no' => $row[1],
+                'student_name' => $row[2],
+                'father_name' => $row[3],
+                'class_id' => (int)$row[4],
+                'section_id' => (int)$row[5],
+                // Defaults
+                'session' => date('Y') . '-' . (date('Y')+1),
+                'category_id' => 1, // Default
+                'fcategory_id' => 1, // Default
+            ];
+
+            try {
+                Student::create($data);
+                $count++;
+            } catch (Exception $e) {
+                $errors[] = "Row $rowNum: " . $e->getMessage();
+            }
+        }
+        fclose($handle);
+
+        if ($count > 0) {
+            Auth::flash('success', "Imported $count students.");
+        }
+        if (!empty($errors)) {
+            Auth::flash('error', "Errors: " . implode(' | ', array_slice($errors, 0, 5)));
+        }
+        
+        $this->redirect('/students');
     }
 
     /**

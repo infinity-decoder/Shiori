@@ -19,7 +19,55 @@ class Student
         ");
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($row) {
+            // Attach meta
+            $meta = self::getMeta($id);
+            $row = array_merge($row, $meta);
+        }
+        
         return $row ?: null;
+    }
+
+    public static function getMeta(int $studentId): array
+    {
+        $pdo = DB::get();
+        $stmt = $pdo->prepare("
+            SELECT f.name, sm.value 
+            FROM student_meta sm
+            JOIN fields f ON sm.field_id = f.id
+            WHERE sm.student_id = ?
+        ");
+        $stmt->execute([$studentId]);
+        $meta = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $meta[$row['name']] = $row['value'];
+        }
+        return $meta;
+    }
+
+    public static function saveMeta(int $studentId, array $data): void
+    {
+        $pdo = DB::get();
+        // Get all custom fields
+        $stmt = $pdo->query("SELECT id, name FROM fields WHERE is_custom = 1");
+        $fields = $stmt->fetchAll(PDO::FETCH_KEY_PAIR); // id => name
+
+        foreach ($fields as $fieldId => $fieldName) {
+            if (isset($data[$fieldName])) {
+                $value = $data[$fieldName];
+                $stmt = $pdo->prepare("
+                    INSERT INTO student_meta (student_id, field_id, value)
+                    VALUES (:sid, :fid, :val)
+                    ON DUPLICATE KEY UPDATE value = :val
+                ");
+                $stmt->execute([
+                    ':sid' => $studentId,
+                    ':fid' => $fieldId,
+                    ':val' => $value
+                ]);
+            }
+        }
     }
 
         public static function paginate(int $page = 1, int $perPage = 10, array $filters = [], string $sort = 'id_desc'): array
@@ -184,7 +232,9 @@ class Student
         ':caste' => $data['caste'] ?? null,
         ':domicile' => $data['domicile'] ?? null,
     ]);
-    return (int)$pdo->lastInsertId();
+    $id = (int)$pdo->lastInsertId();
+    self::saveMeta($id, $data);
+    return $id;
 }
 
 
@@ -215,6 +265,8 @@ class Student
         $sql = "UPDATE students SET " . implode(', ', $fields) . " WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+        
+        self::saveMeta($id, $data);
     }
 
     public static function delete(int $id): void

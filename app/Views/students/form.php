@@ -1,7 +1,8 @@
 <?php
-// $student (null or array), $lookups (arrays), $mode ('create'|'edit')
+// $student (null or array), $lookups (arrays), $mode ('create'|'edit'), $fields (array of active fields)
 $mode = $mode ?? 'create';
 $student = $student ?? [];
+$fields = $fields ?? [];
 
 $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/students/update?id=' . ((int)$student['id']));
 
@@ -11,6 +12,11 @@ $sessions = [];
 for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
     $sessions[] = sprintf('%04d-%04d', $y, $y + 1);
 }
+
+// Helper to get value
+$getValue = function($name) use ($student) {
+    return htmlspecialchars($student[$name] ?? '');
+};
 ?>
 <div class="container">
   <div class="row mb-3 align-items-center">
@@ -32,136 +38,76 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
         <div class="row">
           <div class="col-lg-8">
             <div class="row g-3">
-              <div class="col-md-4">
-                <label class="form-label">Roll No. <span class="text-danger">*</span></label>
-                <input name="roll_no" class="form-control form-control-lg" value="<?= htmlspecialchars($student['roll_no'] ?? '') ?>" required>
-              </div>
+              <?php foreach ($fields as $field): ?>
+                <?php 
+                  $name = $field['name'];
+                  if ($name === 'photo_path') continue; // Handled in side column
+                  
+                  // Determine column width
+                  $colClass = 'col-md-6';
+                  if (in_array($name, ['roll_no', 'enrollment_no', 'session', 'dob', 'cnic', 'mobile', 'bps', 'religion', 'caste', 'domicile'])) {
+                      $colClass = 'col-md-4';
+                  }
+                  if ($name === 'address') {
+                      $colClass = 'col-12';
+                  }
+                ?>
+                
+                <div class="<?= $colClass ?>">
+                  <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
+                  
+                  <?php if ($name === 'session'): ?>
+                    <select name="session" class="form-select form-select-lg">
+                      <option value="">(select)</option>
+                      <?php foreach ($sessions as $s): ?>
+                        <option value="<?= $s; ?>" <?= (isset($student['session']) && $student['session'] === $s) ? 'selected' : ''; ?>><?= $s; ?></option>
+                      <?php endforeach; ?>
+                    </select>
 
-              <div class="col-md-4">
-                <label class="form-label">Enrollment No. <span class="text-danger">*</span></label>
-                <input name="enrollment_no" class="form-control form-control-lg" value="<?= htmlspecialchars($student['enrollment_no'] ?? '') ?>" required>
-              </div>
+                  <?php elseif ($name === 'class_id'): ?>
+                    <select name="class_id" class="form-select form-select-lg" required>
+                      <option value="">Select class</option>
+                      <?php foreach ($lookups['classes'] as $c): ?>
+                        <option value="<?= $c['id']; ?>" <?= (isset($student['class_id']) && $student['class_id'] == $c['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($c['name']); ?></option>
+                      <?php endforeach; ?>
+                    </select>
 
-              <div class="col-md-4">
-                <label class="form-label">Session</label>
-                <select name="session" class="form-select form-select-lg">
-                  <option value="">(select)</option>
-                  <?php foreach ($sessions as $s): ?>
-                    <option value="<?= $s; ?>" <?= (isset($student['session']) && $student['session'] === $s) ? 'selected' : ''; ?>><?= $s; ?></option>
-                  <?php endforeach; ?>
-                </select>
-                <div class="small text-muted mt-1">Academic session, e.g. 2025-2026</div>
-              </div>
+                  <?php elseif ($name === 'section_id'): ?>
+                    <select name="section_id" class="form-select form-select-lg" required>
+                      <option value="">Select section</option>
+                      <?php foreach ($lookups['sections'] as $sct): ?>
+                        <option value="<?= $sct['id']; ?>" <?= (isset($student['section_id']) && $student['section_id'] == $sct['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($sct['name']); ?></option>
+                      <?php endforeach; ?>
+                    </select>
 
-              <div class="col-md-4">
-                <label class="form-label">Class <span class="text-danger">*</span></label>
-                <select name="class_id" class="form-select form-select-lg" required>
-                  <option value="">Select class</option>
-                  <?php foreach ($lookups['classes'] as $c): ?>
-                    <option value="<?= $c['id']; ?>" <?= (isset($student['class_id']) && $student['class_id'] == $c['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($c['name']); ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
+                  <?php elseif ($name === 'category_id'): ?>
+                    <select name="category_id" class="form-select form-select-lg" required>
+                      <option value="">Select category</option>
+                      <?php foreach ($lookups['categories'] as $cat): ?>
+                        <option value="<?= $cat['id']; ?>" <?= (isset($student['category_id']) && $student['category_id'] == $cat['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($cat['name']); ?></option>
+                      <?php endforeach; ?>
+                    </select>
 
-              <div class="col-md-4">
-                <label class="form-label">Section <span class="text-danger">*</span></label>
-                <select name="section_id" class="form-select form-select-lg" required>
-                  <option value="">Select section</option>
-                  <?php foreach ($lookups['sections'] as $sct): ?>
-                    <option value="<?= $sct['id']; ?>" <?= (isset($student['section_id']) && $student['section_id'] == $sct['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($sct['name']); ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
+                  <?php elseif ($name === 'fcategory_id'): ?>
+                    <select name="fcategory_id" class="form-select form-select-lg" required>
+                      <option value="">Select family category</option>
+                      <?php foreach ($lookups['familyCategories'] as $fc): ?>
+                        <option value="<?= $fc['id']; ?>" <?= (isset($student['fcategory_id']) && $student['fcategory_id'] == $fc['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($fc['name']); ?></option>
+                      <?php endforeach; ?>
+                    </select>
 
-              <div class="col-md-4">
-                <label class="form-label">Student Name <span class="text-danger">*</span></label>
-                <input name="student_name" class="form-control form-control-lg" value="<?= htmlspecialchars($student['student_name'] ?? '') ?>" required>
-              </div>
+                  <?php elseif ($field['type'] === 'textarea' || $name === 'address'): ?>
+                    <textarea name="<?= $name ?>" rows="3" class="form-control"><?= $getValue($name) ?></textarea>
 
-              <div class="col-md-4">
-                <label class="form-label">Date of Birth</label>
-                <input id="dob" name="dob" class="form-control form-control-lg" value="<?= htmlspecialchars($student['dob'] ?? '') ?>" placeholder="YYYY-MM-DD">
-              </div>
+                  <?php elseif ($field['type'] === 'date' || $name === 'dob'): ?>
+                    <input id="<?= $name === 'dob' ? 'dob' : '' ?>" name="<?= $name ?>" type="date" class="form-control form-control-lg" value="<?= $getValue($name) ?>">
 
-              <div class="col-md-4">
-                <label class="form-label">B.form</label>
-                <input name="b_form" class="form-control form-control-lg" value="<?= htmlspecialchars($student['b_form'] ?? '') ?>">
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Father Name <span class="text-danger">*</span></label>
-                <input name="father_name" class="form-control form-control-lg" value="<?= htmlspecialchars($student['father_name'] ?? '') ?>" required>
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">CNIC</label>
-                <input name="cnic" class="form-control form-control-lg" value="<?= htmlspecialchars($student['cnic'] ?? '') ?>" placeholder="xxxxx-xxxxxxx-x">
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">Mobile</label>
-                <input name="mobile" class="form-control form-control-lg" value="<?= htmlspecialchars($student['mobile'] ?? '') ?>">
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Father Occupation</label>
-                <input name="father_occupation" class="form-control form-control-lg" value="<?= htmlspecialchars($student['father_occupation'] ?? '') ?>">
-              </div>
-                            <!-- BPS (after father_occupation) -->
-              <div class="col-md-3">
-                <label class="form-label">BPS</label>
-                <input name="bps" class="form-control form-control-lg" value="<?= htmlspecialchars($student['bps'] ?? '') ?>" placeholder="e.g. 17">
-              </div>
-
-              <!-- Religion -->
-              <div class="col-md-3">
-                <label class="form-label">Religion</label>
-                <input name="religion" class="form-control form-control-lg" value="<?= htmlspecialchars($student['religion'] ?? '') ?>" placeholder="e.g. Islam">
-              </div>
-
-              <!-- Caste -->
-              <div class="col-md-3">
-                <label class="form-label">Caste</label>
-                <input name="caste" class="form-control form-control-lg" value="<?= htmlspecialchars($student['caste'] ?? '') ?>" placeholder="e.g. Sheikh">
-              </div>
-
-              <!-- Domicile -->
-              <div class="col-md-3">
-                <label class="form-label">Domicile</label>
-                <input name="domicile" class="form-control form-control-lg" value="<?= htmlspecialchars($student['domicile'] ?? '') ?>" placeholder="e.g. Punjab">
-              </div>
-
-
-              <div class="col-md-6">
-                <label class="form-label">Category <span class="text-danger">*</span></label>
-                <select name="category_id" class="form-select form-select-lg" required>
-                  <option value="">Select category</option>
-                  <?php foreach ($lookups['categories'] as $cat): ?>
-                    <option value="<?= $cat['id']; ?>" <?= (isset($student['category_id']) && $student['category_id'] == $cat['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($cat['name']); ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Family Category <span class="text-danger">*</span></label>
-                <select name="fcategory_id" class="form-select form-select-lg" required>
-                  <option value="">Select family category</option>
-                  <?php foreach ($lookups['familyCategories'] as $fc): ?>
-                    <option value="<?= $fc['id']; ?>" <?= (isset($student['fcategory_id']) && $student['fcategory_id'] == $fc['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($fc['name']); ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Email</label>
-                <input name="email" type="email" class="form-control form-control-lg" value="<?= htmlspecialchars($student['email'] ?? '') ?>">
-              </div>
-
-              <div class="col-12">
-                <label class="form-label">Address</label>
-                <textarea name="address" rows="3" class="form-control"><?= htmlspecialchars($student['address'] ?? '') ?></textarea>
-              </div>
-
+                  <?php else: ?>
+                    <input name="<?= $name ?>" type="<?= $field['type'] === 'number' ? 'number' : 'text' ?>" class="form-control form-control-lg" value="<?= $getValue($name) ?>">
+                  <?php endif; ?>
+                </div>
+              <?php endforeach; ?>
+              
               <div class="col-12 text-end mt-2">
                 <button class="btn btn-lg btn-primary"><?= $mode === 'create' ? 'Save Student' : 'Update Student'; ?></button>
                 <a href="<?= $baseUrl; ?>/students" class="btn btn-lg btn-outline-secondary ms-2">Cancel</a>
@@ -170,6 +116,11 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
           </div>
 
           <div class="col-lg-4">
+            <?php 
+              // Check if photo_path is active
+              $photoField = array_filter($fields, fn($f) => $f['name'] === 'photo_path');
+              if (!empty($photoField)): 
+            ?>
             <div class="card border-0 shadow-sm">
               <div class="card-body text-center">
                 <div class="mb-3">
@@ -190,6 +141,7 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
                 </div>
               </div>
             </div>
+            <?php endif; ?>
 
             <div class="mt-3 text-center">
               <small class="text-muted">Tip: use the calendar for Date of Birth. Session can be selected from the dropdown.</small>
@@ -211,7 +163,6 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
       altFormat: "F j, Y",
       allowInput: true,
       maxDate: "today",
-      // optionally provide a year range (helps with the UI)
       yearRange: [1900, (new Date()).getFullYear()],
     });
   }
@@ -220,12 +171,14 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
   (function () {
     if (typeof FilePond === 'undefined') return;
     const inputElement = document.getElementById('photoFile');
-    const pond = FilePond.create(inputElement, {
-      allowMultiple: false,
-      maxFiles: 1,
-      maxFileSize: '3MB',
-      acceptedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
-      labelIdle: 'Drag & Drop your photo or <span class="filepond--label-action">Browse</span>',
-    });
+    if (inputElement) {
+        const pond = FilePond.create(inputElement, {
+          allowMultiple: false,
+          maxFiles: 1,
+          maxFileSize: '3MB',
+          acceptedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          labelIdle: 'Drag & Drop your photo or <span class="filepond--label-action">Browse</span>',
+        });
+    }
   })();
 </script>

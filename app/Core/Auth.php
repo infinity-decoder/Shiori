@@ -47,4 +47,25 @@ class Auth
         }
         return null;
     }
+
+    public static function hasRole(string $role): bool
+    {
+        $user = self::user();
+        return $user && ($user['role'] === $role);
+    }
+
+    public static function isAdmin(): bool
+    {
+        return self::hasRole('admin');
+    }
+
+    public static function isStaff(): bool
+    {
+        return self::hasRole('staff');
+    }
+
+    public static function isViewer(): bool
+    {
+        return self::hasRole('viewer');
+    }
 }

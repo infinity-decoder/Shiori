@@ -1,0 +1,1 @@
+ALTER TABLE `students` ADD COLUMN `thumbnail_blob` MEDIUMBLOB DEFAULT NULL;

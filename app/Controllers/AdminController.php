@@ -4,8 +4,7 @@ class AdminController extends Controller
     public function backup(): void
     {
         $this->requireAuth();
-        $user = Auth::user();
-        if (empty($user['role']) || $user['role'] !== 'admin') {
+        if (!Auth::isAdmin()) {
             Auth::flash('error', 'Only admins can create backups.');
             $this->redirect('/dashboard');
         }

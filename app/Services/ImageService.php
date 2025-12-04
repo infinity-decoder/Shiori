@@ -87,32 +87,32 @@ class ImageService
             @chmod($dest, 0644);
         }
 
-        // Generate thumbnail (max 300x300) saved as thumb_{id}.jpg for consistent display
-        $thumbPath = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . $studentId . '.jpg';
-
-        $resized = self::createThumbnail($dest, $thumbPath, 300, 300);
-        if (!$resized['ok']) {
-            // Not critical: log the error (but keep original)
-            try {
+        // Generate thumbnail (max 300x300)
+        // We want to return the binary data for DB storage
+        $thumbData = null;
+        $resized = self::createThumbnail($dest, 300, 300);
+        
+        if ($resized['ok']) {
+            $thumbData = $resized['data'];
+            // Also save to disk for fallback/cache if needed? 
+            // The requirement emphasizes DB BLOB for speed/portability maybe?
+            // Let's save to disk as well to keep existing behavior if any, or just for static serving backup.
+            $thumbPath = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . $studentId . '.jpg';
+            @file_put_contents($thumbPath, $thumbData);
+        } else {
+             // Log error
+             try {
                 $logDir = BASE_PATH . '/storage/logs';
                 if (is_dir($logDir)) {
                     @file_put_contents($logDir . '/image_errors.log', '['.date('c').'] Thumb error for '.$filename.': '.$resized['error'].PHP_EOL, FILE_APPEND);
                 }
-            } catch (Throwable $_) {
-                // ignore
-            }
-            // still consider upload OK
-            return ['ok' => true, 'filename' => $filename];
+            } catch (Throwable $_) {}
         }
 
-        if (function_exists('chmod')) {
-            @chmod($thumbPath, 0644);
-        }
-
-        return ['ok' => true, 'filename' => $filename];
+        return ['ok' => true, 'filename' => $filename, 'thumbnail_blob' => $thumbData];
     }
 
-    private static function createThumbnail(string $srcPath, string $destPath, int $maxW, int $maxH): array
+    private static function createThumbnail(string $srcPath, int $maxW, int $maxH): array
     {
         $info = @getimagesize($srcPath);
         if ($info === false) {
@@ -120,28 +120,20 @@ class ImageService
         }
         $mime = $info['mime'] ?? 'image/jpeg';
 
-        // If GD functions are missing, abort thumbnail creation gracefully
+        // If GD functions are missing
         if (!function_exists('imagecreatetruecolor') || !function_exists('imagecopyresampled') || !function_exists('imagejpeg')) {
-            return ['ok' => false, 'error' => 'GD extension not available for thumbnail generation.'];
+            return ['ok' => false, 'error' => 'GD extension not available.'];
         }
 
-        // Create source image resource based on mime
+        // Create source image resource
         switch ($mime) {
-            case 'image/jpeg':
-                $srcImg = @imagecreatefromjpeg($srcPath);
+            case 'image/jpeg': $srcImg = @imagecreatefromjpeg($srcPath); break;
+            case 'image/png':  $srcImg = @imagecreatefrompng($srcPath); break;
+            case 'image/webp': 
+                if (function_exists('imagecreatefromwebp')) $srcImg = @imagecreatefromwebp($srcPath);
+                else $srcImg = @imagecreatefromstring(file_get_contents($srcPath));
                 break;
-            case 'image/png':
-                $srcImg = @imagecreatefrompng($srcPath);
-                break;
-            case 'image/webp':
-                if (function_exists('imagecreatefromwebp')) {
-                    $srcImg = @imagecreatefromwebp($srcPath);
-                } else {
-                    $srcImg = @imagecreatefromstring(file_get_contents($srcPath));
-                }
-                break;
-            default:
-                $srcImg = @imagecreatefromstring(file_get_contents($srcPath));
+            default: $srcImg = @imagecreatefromstring(file_get_contents($srcPath));
         }
 
         if (!$srcImg) {
@@ -161,23 +153,23 @@ class ImageService
         $newH = (int)round($h * $ratio);
 
         $thumb = imagecreatetruecolor($newW, $newH);
-
-        // White background for JPEG; preserve for PNG/WebP by copying background where possible
         $white = imagecolorallocate($thumb, 255, 255, 255);
         imagefill($thumb, 0, 0, $white);
 
         imagecopyresampled($thumb, $srcImg, 0, 0, 0, 0, $newW, $newH, $w, $h);
 
-        // Save as JPEG (most compatible) with quality 85
-        $saved = @imagejpeg($thumb, $destPath, 85);
+        // Capture output
+        ob_start();
+        $saved = @imagejpeg($thumb, null, 85);
+        $data = ob_get_clean();
 
         imagedestroy($thumb);
         imagedestroy($srcImg);
 
-        if (!$saved) {
-            return ['ok' => false, 'error' => 'Failed to save thumbnail.'];
+        if (!$saved || empty($data)) {
+            return ['ok' => false, 'error' => 'Failed to generate thumbnail data.'];
         }
-        return ['ok' => true];
+        return ['ok' => true, 'data' => $data];
     }
 
     /**
