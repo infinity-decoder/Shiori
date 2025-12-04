@@ -71,8 +71,6 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
             <ul class="dropdown-menu" aria-labelledby="adminDropdown">
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/activity">Activity Log</a></li>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="<?= $baseUrl; ?>/admin/backup">Backup DB</a></li>
             </ul>
           </li>
         <?php endif; ?>

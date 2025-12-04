@@ -102,6 +102,32 @@ $getValue = function($name) use ($student) {
                   <?php elseif ($field['type'] === 'date' || $name === 'dob'): ?>
                     <input id="<?= $name === 'dob' ? 'dob' : '' ?>" name="<?= $name ?>" type="date" class="form-control form-control-lg" value="<?= $getValue($name) ?>">
 
+                  <?php elseif ($field['type'] === 'select'): ?>
+                    <?php 
+                        $opts = array_map('trim', explode(',', $field['options'] ?? ''));
+                        $val = $getValue($name);
+                    ?>
+                    <select name="<?= $name ?>" class="form-select form-select-lg">
+                        <option value="">(select)</option>
+                        <?php foreach ($opts as $opt): ?>
+                            <option value="<?= htmlspecialchars($opt) ?>" <?= $val === $opt ? 'selected' : '' ?>><?= htmlspecialchars($opt) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                  <?php elseif ($field['type'] === 'radio'): ?>
+                    <?php 
+                        $opts = array_map('trim', explode(',', $field['options'] ?? ''));
+                        $val = $getValue($name);
+                    ?>
+                    <div class="mt-2">
+                        <?php foreach ($opts as $opt): ?>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="<?= $name ?>" value="<?= htmlspecialchars($opt) ?>" id="<?= $name . '_' . md5($opt) ?>" <?= $val === $opt ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="<?= $name . '_' . md5($opt) ?>"><?= htmlspecialchars($opt) ?></label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
                   <?php else: ?>
                     <input name="<?= $name ?>" type="<?= $field['type'] === 'number' ? 'number' : 'text' ?>" class="form-control form-control-lg" value="<?= $getValue($name) ?>">
                   <?php endif; ?>

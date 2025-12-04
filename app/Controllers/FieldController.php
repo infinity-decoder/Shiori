@@ -27,6 +27,7 @@ class FieldController extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $label = trim($_POST['label'] ?? '');
             $type = $_POST['type'] ?? 'text';
+            $options = trim($_POST['options'] ?? ''); // Comma-separated or JSON
             
             if (empty($label)) {
                 Auth::flash('error', 'Label is required.');
@@ -41,6 +42,7 @@ class FieldController extends Controller
                 'name' => $name,
                 'label' => $label,
                 'type' => $type,
+                'options' => $options,
                 'is_custom' => 1,
                 'is_active' => 1,
                 'order_index' => 99

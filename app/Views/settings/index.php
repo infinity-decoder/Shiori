@@ -89,7 +89,13 @@
                                         <option value="number">Number</option>
                                         <option value="date">Date</option>
                                         <option value="textarea">Text Area</option>
+                                        <option value="select">Dropdown (Select)</option>
+                                        <option value="radio">Radio Buttons</option>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Options (for Dropdown/Radio)</label>
+                                    <textarea name="options" class="form-control" placeholder="Comma-separated values (e.g. A, B, C)"></textarea>
                                 </div>
                                 <button class="btn btn-primary w-100">Add Field</button>
                             </form>

@@ -34,9 +34,18 @@ class AdminController extends Controller
         $db   = $cfg['name'];
 
         // Use escapeshellarg for safety
-        $mysqldumpPath = 'c:\\Program Files\\Ampps\\mysql\\bin\\mysqldump.exe';
+        // Use escapeshellarg for safety
+        // Try common Ampps path first
+        $mysqldumpPath = 'C:/Program Files/Ampps/mysql/bin/mysqldump.exe';
         if (!file_exists($mysqldumpPath)) {
-            $mysqldumpPath = 'mysqldump'; // Fallback to PATH
+             // Try to find it via 'where' command if on Windows
+             $output = [];
+             @exec('where mysqldump', $output);
+             if (!empty($output[0])) {
+                 $mysqldumpPath = trim($output[0]);
+             } else {
+                 $mysqldumpPath = 'mysqldump'; // Last resort
+             }
         }
 
         $cmdParts = [
