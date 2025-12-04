@@ -13,7 +13,7 @@ class InstallerController extends Controller
         $error = $_SESSION['install_error'] ?? null;
         unset($_SESSION['install_error']);
 
-        View::render('installer/index.php', ['error' => $error]);
+        View::partial('installer/index.php', ['error' => $error]);
     }
 
     public function install()
