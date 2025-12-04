@@ -77,6 +77,7 @@
               <a href="<?= $baseUrl; ?>/admin/backup" class="btn btn-outline-danger mt-2"><i class="bi bi-hdd-stack me-1"></i> Backup DB</a>
             <?php endif; ?>
 
+            <a href="<?= $baseUrl; ?>/students/import" class="btn btn-outline-primary mt-2"><i class="bi bi-upload me-1"></i> Import CSV</a>
             <a href="<?= $baseUrl; ?>/students/export?all=1" class="btn btn-outline-success mt-2"><i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV</a>
           </div>
         </div>

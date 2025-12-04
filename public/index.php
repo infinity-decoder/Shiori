@@ -78,6 +78,7 @@ require_once BASE_PATH . '/app/Controllers/StudentController.php';
 require_once BASE_PATH . '/app/Controllers/ActivityController.php';
 require_once BASE_PATH . '/app/Controllers/AdminController.php';
 require_once BASE_PATH . '/app/Controllers/FieldController.php';
+require_once BASE_PATH . '/app/Controllers/SettingsController.php';
 
 require_once BASE_PATH . '/app/Models/Field.php';
 
@@ -117,14 +118,19 @@ $router->post('/students/import', 'StudentController@processImport');
 $router->get('/students/thumbnail', 'StudentController@thumbnail'); // ?id=#
 $router->get('/students/print', 'StudentController@print');    // print-friendly view ?id=#
 
+// Settings & Users
+$router->get('/settings', 'SettingsController@index');
+$router->post('/settings/users/store', 'SettingsController@storeUser');
+$router->post('/settings/users/delete', 'SettingsController@deleteUser');
+
 // Activity Log
 $router->get('/activity', 'ActivityController@index');
 
 // Fields Management
 $router->get('/fields', 'FieldController@index');
 $router->post('/fields/store', 'FieldController@store');
-$router->get('/fields/toggle', 'FieldController@toggle');
-$router->get('/fields/delete', 'FieldController@delete');
+$router->post('/fields/toggle', 'FieldController@toggle');
+$router->post('/fields/delete', 'FieldController@delete');
 
 // Admin utilities
 $router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)

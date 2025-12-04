@@ -1,5 +1,3 @@
-<?php View::partial('layouts/main.php', ['title' => $title]); ?>
-
 <div class="container-fluid px-4">
     <h1 class="mt-4">Activity Log</h1>
     <ol class="breadcrumb mb-4">
@@ -9,7 +7,7 @@
 
     <div class="card mb-4">
         <div class="card-header">
-            <i class="fas fa-history me-1"></i>
+            <i class="bi bi-clock-history me-1"></i>
             Recent Activity
         </div>
         <div class="card-body">
@@ -53,5 +51,3 @@
         </div>
     </div>
 </div>
-
-<?php View::partial('layouts/footer.php'); ?>

@@ -30,7 +30,7 @@ class FieldController extends Controller
             
             if (empty($label)) {
                 Auth::flash('error', 'Label is required.');
-                $this->redirect('/fields');
+                $this->redirect('/settings');
             }
 
             // Generate name from label
@@ -47,7 +47,7 @@ class FieldController extends Controller
             ]);
 
             Auth::flash('success', 'Field created.');
-            $this->redirect('/fields');
+            $this->redirect('/settings');
         }
     }
 
@@ -58,12 +58,12 @@ class FieldController extends Controller
             $this->redirect('/dashboard');
         }
 
-        $id = (int)($_GET['id'] ?? 0);
+        $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
             Field::toggle($id);
             Auth::flash('success', 'Field status updated.');
         }
-        $this->redirect('/fields');
+        $this->redirect('/settings');
     }
 
     public function delete(): void
@@ -73,11 +73,11 @@ class FieldController extends Controller
             $this->redirect('/dashboard');
         }
         
-        $id = (int)($_GET['id'] ?? 0);
+        $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
             Field::delete($id);
             Auth::flash('success', 'Field deleted.');
         }
-        $this->redirect('/fields');
+        $this->redirect('/settings');
     }
 }

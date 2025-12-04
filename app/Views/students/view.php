@@ -21,9 +21,13 @@
         <div class="col-md-3">
           <div class="mb-3">
                   <?php
-                  $photoUrl = ImageService::getPhotoUrl($student['photo_path'] ?? null, (int)$student['id']);
-                  if ($photoUrl): ?>
-                      <img src="<?= $baseUrl . $photoUrl; ?>" alt="photo" class="img-fluid rounded" style="width:100%; height:auto;">
+                  $thumbUrl = $baseUrl . '/students/thumbnail?id=' . (int)$student['id'];
+                  // Check if we have a photo path to decide whether to show placeholder or image
+                  // Since thumbnail route handles fallback, we can just try to load it. 
+                  // But to be cleaner, let's check if photo_path is set.
+                  if (!empty($student['photo_path'])): ?>
+                      <img src="<?= $thumbUrl; ?>" alt="photo" class="img-fluid rounded" style="width:100%; height:auto;"
+                           onerror="this.onerror=null;this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22200%22%20height%3D%22200%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20200%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22200%22%20height%3D%22200%22%20fill%3D%22%23eeeeee%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23aaaaaa%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';">
                   <?php else: ?>
                       <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:6px;">
                           <i class="bi bi-person fs-1 text-muted"></i>

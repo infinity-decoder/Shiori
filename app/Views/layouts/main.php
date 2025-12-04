@@ -64,8 +64,16 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
           <a class="nav-link" href="<?= $baseUrl; ?>/students">Students</a>
         </li>
         <?php if (Auth::user()['role'] === 'admin'): ?>
-          <li class="nav-item">
-            <a class="nav-link" href="<?= $baseUrl; ?>/activity">Activity Log</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Admin
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/activity">Activity Log</a></li>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="<?= $baseUrl; ?>/admin/backup">Backup DB</a></li>
+            </ul>
           </li>
         <?php endif; ?>
       </ul>
