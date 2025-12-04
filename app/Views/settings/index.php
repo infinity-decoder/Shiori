@@ -1,4 +1,4 @@
-<?php View::partial('layouts/main.php', ['title' => $title]); ?>
+
 
 <div class="container">
     <div class="row mb-4">
@@ -189,4 +189,4 @@
     </div>
 </div>
 
-<?php View::partial('layouts/footer.php'); ?>
+

@@ -4,6 +4,7 @@ declare(strict_types=1);
 define('BASE_PATH', dirname(__DIR__));
 
 $app = require BASE_PATH . '/config/app.php';
+define('BASE_URL', rtrim($app['base_url'], '/'));
 
 // Check for installer
 if (!file_exists(BASE_PATH . '/config/database.php')) {
