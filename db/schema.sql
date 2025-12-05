@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `role` enum('admin','staff','viewer') DEFAULT 'viewer',
   `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
+  `last_login` datetime DEFAULT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)

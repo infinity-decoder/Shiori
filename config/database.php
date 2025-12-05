@@ -1,9 +1,9 @@
 <?php
 return [
-    'host'    => '127.0.0.1',
+    'host'    => 'localhost',
     'port'    => 3306,
-    'name'    => 'FGSS',
-    'user'    => 'root',   // change if you use a different DB user
-    'pass'    => '',       // change if you set a password
+    'name'    => 'shiori_db',
+    'user'    => 'root',
+    'pass'    => '',
     'charset' => 'utf8mb4',
 ];
