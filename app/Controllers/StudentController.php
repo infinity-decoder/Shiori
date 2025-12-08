@@ -1,6 +1,13 @@
 <?php
 class StudentController extends Controller
 {
+    // Standard CSV field order for import/export/template consistency
+    const CSV_FIELD_ORDER = [
+        'roll_no', 'enrollment_no', 'student_name', 'class_id', 'section_id',
+        'session', 'dob', 'b_form', 'father_name', 'father_occupation',
+        'cnic', 'mobile', 'email', 'category_id', 'fcategory_id',
+        'bps', 'religion', 'caste', 'domicile', 'address'
+    ];
         public function index(): void
     {
         $this->requireAuth();
@@ -50,15 +57,25 @@ class StudentController extends Controller
             Auth::flash('error', 'Viewers cannot create students.');
             $this->redirect('/students');
         }
+        // Load Session model for database-driven sessions
+        require_once BASE_PATH . '/app/Models/Session.php';
+        
         $lookups = [
             'classes'        => Lookup::getClasses(),
             'sections'       => Lookup::getSections(),
+            'sessions'       => Lookup::getSessions(), // From database
             'categories'     => Lookup::getCategories(),
             'familyCategories' => Lookup::getFamilyCategories(),
         ];
         // Get active fields
         require_once BASE_PATH . '/app/Models/Field.php';
+        Field::seedDefaults(); // Ensure defaults exist
         $fields = Field::getAll(true);
+        
+        if (empty($fields)) {
+            // Should not happen after seed, but just in case
+            Auth::flash('error', 'No active fields found.');
+        }
         
         $this->view('students/form.php', [
             'title'   => 'Add Student | Shiori',
@@ -92,7 +109,21 @@ class StudentController extends Controller
 
         $data = $validation['data'];
         try {
-            $id = Student::create($data);
+            // Handle Custom Fields (Validator strips them, so we pick from $_POST)
+            // We'll fetch all custom fields to know what to look for
+            require_once BASE_PATH . '/app/Models/Field.php';
+            $allFields = Field::getAll(false);
+            $customData = [];
+            foreach ($allFields as $f) {
+                if ($f['is_custom'] && isset($_POST[$f['name']])) {
+                    $customData[$f['name']] = trim($_POST[$f['name']]);
+                }
+            }
+            // Merge into data if Student::create supports it, OR call saveMeta separately
+            // Student::create calls saveMeta internally with the passed array, so we merge:
+            $fullData = array_merge($data, $customData);
+            
+            $id = Student::create($fullData);
 
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
@@ -141,15 +172,24 @@ class StudentController extends Controller
             Auth::flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        // Load Session model for database-driven sessions
+        require_once BASE_PATH . '/app/Models/Session.php';
+        
         $lookups = [
             'classes'        => Lookup::getClasses(),
             'sections'       => Lookup::getSections(),
+            'sessions'       => Lookup::getSessions(), // From database
             'categories'     => Lookup::getCategories(),
             'familyCategories' => Lookup::getFamilyCategories(),
         ];
         // Get active fields
         require_once BASE_PATH . '/app/Models/Field.php';
+        Field::seedDefaults();
         $fields = Field::getAll(true);
+
+        if (empty($fields)) {
+            Auth::flash('error', 'No active fields found.');
+        }
 
         $this->view('students/form.php', [
             'title'   => 'Edit Student | Shiori',
@@ -194,8 +234,20 @@ class StudentController extends Controller
         }
 
         $data = $validation['data'];
+        
+        // Handle Custom Fields for Update
+        require_once BASE_PATH . '/app/Models/Field.php';
+        $allFields = Field::getAll(false);
+        $customData = [];
+        foreach ($allFields as $f) {
+            if ($f['is_custom'] && isset($_POST[$f['name']])) {
+                $customData[$f['name']] = trim($_POST[$f['name']]);
+            }
+        }
+        $fullData = array_merge($data, $customData);
+
         try {
-            Student::update($id, $data);
+            Student::update($id, $fullData);
 
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 if (!empty($student['photo_path'])) {
@@ -299,10 +351,13 @@ class StudentController extends Controller
             Auth::flash('error', 'Viewers cannot import data.');
             $this->redirect('/students');
         }
-        $this->view('students/import.php', ['title' => 'Import Students | Shiori']);
+        $this->view('students/import.php', [
+            'title' => 'Import Students | Shiori',
+            'templateUrl' => BASE_URL . '/students/import-template'
+        ]);
     }
 
-    public function processImport(): void
+    public function importProcess(): void
     {
         $this->requireAuth();
         if (Auth::isViewer()) {
@@ -367,10 +422,142 @@ class StudentController extends Controller
             Auth::flash('success', "Imported $count students.");
         }
         if (!empty($errors)) {
-            Auth::flash('error', "Errors: " . implode(' | ', array_slice($errors, 0, 5)));
+            // Limit errors to avoid huge session cookie
+            $errStr = implode(' | ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) $errStr .= '... (and more)';
+            Auth::flash('error', "Errors: " . $errStr);
         }
         
         $this->redirect('/students');
+    }
+
+    /**
+     * Import students from CSV URL
+     */
+    public function importFromUrl(): void
+    {
+        $this->requireAuth();
+        if (Auth::isViewer()) {
+            Auth::flash('error', 'Viewers cannot import data.');
+            $this->redirect('/students');
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/students/import');
+        }
+        
+        if (!CSRF::verify($_POST['csrf_token'] ?? null)) {
+            Auth::flash('error', 'Invalid session token.');
+            $this->redirect('/students/import');
+        }
+        
+        $url = trim($_POST['csv_url'] ?? '');
+        
+        if (empty($url)) {
+            Auth::flash('error', 'CSV URL is required.');
+            $this->redirect('/students/import');
+        }
+        
+        // Validate URL format
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            Auth::flash('error', 'Invalid URL format.');
+            $this->redirect('/students/import');
+        }
+        
+        // Download CSV content with timeout and size limit
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 30,
+                'user_agent' => 'Shiori SIS/1.0'
+            ]
+        ]);
+        
+        $csvContent = @file_get_contents($url, false, $context);
+        
+        if ($csvContent === false) {
+            Auth::flash('error', 'Could not download CSV from URL. Please check the URL and try again.');
+            $this->redirect('/students/import');
+        }
+        
+        // Check file size (max 5MB)
+        if (strlen($csvContent) > 5 * 1024 * 1024) {
+            Auth::flash('error', 'CSV file too large (max 5MB).');
+            $this->redirect('/students/import');
+        }
+        
+        // Save to temporary file
+        $tmpFile = tempnam(sys_get_temp_dir(), 'csv_import_');
+        file_put_contents($tmpFile, $csvContent);
+        
+        // Process the CSV file (reuse existing logic)
+        $handle = fopen($tmpFile, 'r');
+        if (!$handle) {
+            @unlink($tmpFile);
+            Auth::flash('error', 'Could not process CSV file.');
+            $this->redirect('/students/import');
+        }
+        
+        // Skip header
+        fgetcsv($handle);
+        
+        $count = 0;
+        $errors = [];
+        $rowNum = 1;
+        
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNum++;
+            if (count($row) < 6) {
+                $errors[] = "Row $rowNum: Not enough columns.";
+                continue;
+            }
+            
+            $data = [
+                'roll_no' => $row[0],
+                'enrollment_no' => $row[1],
+                'student_name' => $row[2],
+                'father_name' => $row[3],
+                'class_id' => (int)$row[4],
+                'section_id' => (int)$row[5],
+                'session' => date('Y') . '-' . (date('Y')+1),
+                'category_id' => 1,
+                'fcategory_id' => 1,
+            ];
+            
+            try {
+                Student::create($data);
+                $count++;
+            } catch (Exception $e) {
+                $errors[] = "Row $rowNum: " . $e->getMessage();
+            }
+        }
+        fclose($handle);
+        @unlink($tmpFile);
+        
+        if ($count > 0) {
+            Auth::flash('success', "Imported $count students from URL.");
+        }
+        if (!empty($errors)) {
+            $errStr = implode(' | ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) $errStr .= '... (and more)';
+            Auth::flash('error', "Errors: " . $errStr);
+        }
+        
+        $this->redirect('/students');
+    }
+
+    public function downloadTemplate(): void
+    {
+        $this->requireAuth();
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="student_import_template.csv"');
+        
+        $out = fopen('php://output', 'w');
+        // Standard headers matching the import logic
+        fputcsv($out, ['Roll No', 'Enrollment No', 'Student Name', 'Father Name', 'Class ID', 'Section ID']);
+        // Example row
+        fputcsv($out, ['101', 'ENR-2025-001', 'John Doe', 'Richard Doe', '1', '1']);
+        fclose($out);
+        exit;
     }
 
     /**

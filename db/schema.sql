@@ -79,6 +79,17 @@ CREATE TABLE IF NOT EXISTS `students` (
   CONSTRAINT `fk_student_fcategory` FOREIGN KEY (`fcategory_id`) REFERENCES `family_categories` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Sessions (Dynamic Year Management)
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `session_year` varchar(20) NOT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `session_year` (`session_year`),
+  KEY `idx_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Fields (Dynamic)
 CREATE TABLE IF NOT EXISTS `fields` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -86,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `fields` (
   `label` varchar(100) NOT NULL,
   `type` varchar(20) DEFAULT 'text',
   `options` TEXT DEFAULT NULL,
+  `section` varchar(50) DEFAULT 'main',
   `is_custom` tinyint(1) DEFAULT 0,
   `is_active` tinyint(1) DEFAULT 1,
   `order_index` int(11) DEFAULT 0,
@@ -114,7 +126,8 @@ CREATE TABLE IF NOT EXISTS `activity_logs` (
   `entity_id` int(11) DEFAULT NULL,
   `details` text,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS=1;

@@ -60,7 +60,8 @@ $getValue = function($name) use ($student) {
                     <select name="session" class="form-select form-select-lg">
                       <option value="">(select)</option>
                       <?php foreach ($sessions as $s): ?>
-                        <option value="<?= $s; ?>" <?= (isset($student['session']) && $student['session'] === $s) ? 'selected' : ''; ?>><?= $s; ?></option>
+                        <?php $sessionYear = is_array($s) ? $s['session_year'] : $s; ?>
+                        <option value="<?= $sessionYear; ?>" <?= (isset($student['session']) && $student['session'] === $sessionYear) ? 'selected' : ''; ?>><?= $sessionYear; ?></option>
                       <?php endforeach; ?>
                     </select>
 

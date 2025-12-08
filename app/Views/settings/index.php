@@ -84,7 +84,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Field Type</label>
-                                    <select name="type" class="form-select">
+                                    <select name="type" id="field_type" class="form-select">
                                         <option value="text">Text</option>
                                         <option value="number">Number</option>
                                         <option value="date">Date</option>
@@ -93,9 +93,10 @@
                                         <option value="radio">Radio Buttons</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Options (for Dropdown/Radio)</label>
-                                    <textarea name="options" class="form-control" placeholder="Comma-separated values (e.g. A, B, C)"></textarea>
+                                <div class="mb-3" id="options_field" style="display:none;">
+                                    <label class="form-label">Options <span class="text-danger">*</span></label>
+                                    <textarea name="options" id="options_textarea" class="form-control" placeholder="Comma-separated values (e.g. A+, A-, B+, O+)"></textarea>
+                                    <div class="form-text">Enter comma-separated options for dropdown or radio buttons</div>
                                 </div>
                                 <button class="btn btn-primary w-100">Add Field</button>
                             </form>
@@ -195,4 +196,29 @@
     </div>
 </div>
 
-
+<script>
+// Show/hide options field based on field type
+document.addEventListener('DOMContentLoaded', function() {
+    const fieldTypeSelect = document.getElementById('field_type');
+    const optionsField = document.getElementById('options_field');
+    const optionsTextarea = document.getElementById('options_textarea');
+    
+    if (fieldTypeSelect && optionsField) {
+        fieldTypeSelect.addEventListener('change', function() {
+            if (this.value === 'select' || this.value === 'radio') {
+                optionsField.style.display = 'block';
+                if (optionsTextarea) optionsTextarea.required = true;
+            } else {
+                optionsField.style.display = 'none';
+                if (optionsTextarea) {
+                    optionsTextarea.required = false;
+                    optionsTextarea.value = '';
+                }
+            }
+        });
+        
+        // Trigger on page load
+        fieldTypeSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>

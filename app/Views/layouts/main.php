@@ -52,7 +52,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
   <div class="container">
     <a class="navbar-brand" href="<?= $baseUrl; ?>/dashboard">
-      <i class="bi bi-journal-bookmark-fill text-primary"></i>
+      <span style="font-size:1.5em; font-weight:bold; color:#667eea;">∞</span>
       <span class="ms-1"><?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></span>
     </a>
     <div class="collapse navbar-collapse" id="navbarNav">
@@ -69,8 +69,27 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
               Admin
             </a>
             <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/activity">Activity Log</a></li>
-              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">Settings</a></li>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/lookups">
+                <i class="bi bi-gear me-2"></i>Manage Lookups
+              </a></li>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">
+                <i class="bi bi-sliders me-2"></i>Settings & Fields
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/admin/backup">
+                <i class="bi bi-download me-2"></i>Backup Database
+              </a></li>
+              <li>
+                <form method="POST" action="<?= $baseUrl; ?>/admin/clear-logs" class="dropdown-item p-0" onsubmit="return confirm('Clear all activity logs older than 90 days?');">
+                  <?= CSRF::field(); ?>
+                  <button type="submit" class="btn btn-link text-decoration-none text-dark w-100 text-start p-2" style="background:none; border:none;">
+                    <i class="bi bi-trash me-2"></i>Clear Old Logs
+                  </button>
+                </form>
+              </li>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/activity">
+                <i class="bi bi-clock-history me-2"></i>Activity Log
+              </a></li>
             </ul>
           </li>
         <?php endif; ?>

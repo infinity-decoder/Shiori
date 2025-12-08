@@ -35,16 +35,37 @@ class AdminController extends Controller
 
         // Use escapeshellarg for safety
         // Use escapeshellarg for safety
-        // Try common Ampps path first
-        $mysqldumpPath = 'C:/Program Files/Ampps/mysql/bin/mysqldump.exe';
-        if (!file_exists($mysqldumpPath)) {
+        // Try common paths
+        $candidates = [
+            'C:/xampp/mysql/bin/mysqldump.exe',
+            'C:/laragon/bin/mysql/mysql-8.0.30-winx64/bin/mysqldump.exe', // Example Laragon path
+            'C:/Program Files/Ampps/mysql/bin/mysqldump.exe',
+        ];
+        
+        // Dynamic Laragon check
+        if (is_dir('C:/laragon/bin/mysql')) {
+            $dirs = glob('C:/laragon/bin/mysql/*', GLOB_ONLYDIR);
+            if ($dirs) {
+                foreach ($dirs as $d) {
+                    $candidates[] = $d . '/bin/mysqldump.exe';
+                }
+            }
+        }
+
+        $mysqldumpPath = 'mysqldump'; // Default fallback
+        foreach ($candidates as $c) {
+            if (file_exists($c)) {
+                $mysqldumpPath = $c;
+                break;
+            }
+        }
+
+        if ($mysqldumpPath === 'mysqldump') {
              // Try to find it via 'where' command if on Windows
              $output = [];
              @exec('where mysqldump', $output);
              if (!empty($output[0])) {
                  $mysqldumpPath = trim($output[0]);
-             } else {
-                 $mysqldumpPath = 'mysqldump'; // Last resort
              }
         }
 
@@ -81,5 +102,32 @@ class AdminController extends Controller
         @unlink($filePath);
 
         exit;
+    }
+
+    /**
+     * Clear old activity logs (older than 90 days)
+     */
+    public function clearLogs(): void
+    {
+        $this->requireAuth();
+        if (!Auth::isAdmin()) {
+            Auth::flash('error', 'Only admins can clear activity logs.');
+            $this->redirect('/dashboard');
+        }
+
+        $pdo = DB::get();
+        
+        try {
+            // Delete logs older than 90 days
+            $stmt = $pdo->prepare("DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY)");
+            $stmt->execute();
+            $deletedCount = $stmt->rowCount();
+            
+            Auth::flash('success', "Cleared $deletedCount old activity logs (older than 90 days).");
+        } catch (PDOException $e) {
+            Auth::flash('error', 'Failed to clear logs: ' . $e->getMessage());
+        }
+        
+        $this->redirect('/activity');
     }
 }

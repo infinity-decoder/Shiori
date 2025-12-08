@@ -80,8 +80,10 @@ require_once BASE_PATH . '/app/Controllers/ActivityController.php';
 require_once BASE_PATH . '/app/Controllers/AdminController.php';
 require_once BASE_PATH . '/app/Controllers/FieldController.php';
 require_once BASE_PATH . '/app/Controllers/SettingsController.php';
+require_once BASE_PATH . '/app/Controllers/LookupController.php';
 
 require_once BASE_PATH . '/app/Models/Field.php';
+require_once BASE_PATH . '/app/Models/Session.php';
 
 // ---------- Routing ----------
 $router = new Router($app['base_url']);
@@ -115,7 +117,9 @@ $router->post('/students/update', 'StudentController@update'); // ?id=#
 $router->post('/students/delete', 'StudentController@destroy'); // ?id=#
 $router->get('/students/export', 'StudentController@export');  // CSV export
 $router->get('/students/import', 'StudentController@import');
-$router->post('/students/import', 'StudentController@processImport');
+$router->get('/students/import-template', 'StudentController@downloadTemplate');
+$router->post('/students/import-process', 'StudentController@importProcess'); // File upload
+$router->post('/students/import-url', 'StudentController@importFromUrl'); // URL import
 $router->get('/students/thumbnail', 'StudentController@thumbnail'); // ?id=#
 $router->get('/students/print', 'StudentController@print');    // print-friendly view ?id=#
 
@@ -133,7 +137,21 @@ $router->post('/fields/store', 'FieldController@store');
 $router->post('/fields/toggle', 'FieldController@toggle');
 $router->post('/fields/delete', 'FieldController@delete');
 
+// Lookup Management (Admin only)
+$router->get('/lookups', 'LookupController@index');
+$router->post('/lookups/classes/store', 'LookupController@storeClass');
+$router->post('/lookups/classes/delete', 'LookupController@deleteClass');
+$router->post('/lookups/sections/store', 'LookupController@storeSection');
+$router->post('/lookups/sections/delete', 'LookupController@deleteSection');
+$router->post('/lookups/sessions/store', 'LookupController@storeSession');
+$router->post('/lookups/sessions/toggle', 'LookupController@toggleSession');
+$router->post('/lookups/categories/store', 'LookupController@storeCategory');
+$router->post('/lookups/categories/delete', 'LookupController@deleteCategory');
+$router->post('/lookups/familycategories/store', 'LookupController@storeFamilyCategory');
+$router->post('/lookups/familycategories/delete', 'LookupController@deleteFamilyCategory');
+
 // Admin utilities
 $router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)
+$router->post('/admin/clear-logs', 'AdminController@clearLogs'); // Clear activity logs
 
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
