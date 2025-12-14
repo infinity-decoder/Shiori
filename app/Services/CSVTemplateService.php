@@ -179,7 +179,7 @@ class CSVTemplateService
             'student_name' => 'John Doe',
             'father_name' => 'Richard Doe',
             'class_id' => '1',
-            'section_id' => '1',
+            'section_id' => 'A',  // Use name, not ID
             'session' => '2025-2026',
             'dob' => '2010-01-15',
             'b_form' => '1234567890123',

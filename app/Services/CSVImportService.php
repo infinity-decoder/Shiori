@@ -148,7 +148,9 @@ class CSVImportService
             $value = isset($row[$colIndex]) ? trim($row[$colIndex]) : '';
             $fieldName = $fieldMeta['name'];
             
-            // Special handling for Category and Family Category (name-to-ID mapping)
+            // Special handling for lookup fields (name-to-ID mapping)
+            
+            // Category mapping
             if ($fieldName === 'category_id') {
                 if (!empty($value)) {
                     $categoryId = LookupService::getCategoryIdByName($value);
@@ -157,10 +159,37 @@ class CSVImportService
                 continue; // Skip normal validation
             }
             
+            // Family Category mapping
             if ($fieldName === 'fcategory_id') {
                 if (!empty($value)) {
                     $fcategoryId = LookupService::getFamilyCategoryIdByName($value);
                     $data['fcategory_id'] = $fcategoryId;
+                }
+                continue; // Skip normal validation
+            }
+            
+            // Section mapping
+            if ($fieldName === 'section_id') {
+                if (!empty($value)) {
+                    $sectionId = LookupService::getSectionIdByName($value);
+                    if ($sectionId === null) {
+                        // Invalid section name - add warning but don't fail
+                        $errors[] = "Section '{$value}' not found, row will use default";
+                    }
+                    $data['section_id'] = $sectionId;
+                }
+                continue; // Skip normal validation
+            }
+            
+            // Class mapping
+            if ($fieldName === 'class_id') {
+                if (!empty($value)) {
+                    $classId = LookupService::getClassIdByName($value);
+                    if ($classId === null) {
+                        $errors[] = "Class '{$value}' not found";
+                    } else {
+                        $data['class_id'] = $classId;
+                    }
                 }
                 continue; // Skip normal validation
             }
@@ -181,12 +210,20 @@ class CSVImportService
         }
         
         // LENIENT VALIDATION: Only check truly mandatory fields
-        $strictlyRequired = ['roll_no', 'enrollment_no', 'student_name', 'father_name', 'class_id', 'section_id'];
+        $strictlyRequired = ['roll_no', 'enrollment_no', 'student_name', 'father_name'];
         
         foreach ($strictlyRequired as $req) {
             if (!isset($data[$req]) || $data[$req] === '' || $data[$req] === null) {
                 $errors[] = ucfirst(str_replace('_', ' ', $req)) . " is required";
             }
+        }
+        
+        // Check class_id and section_id are resolved
+        if (!isset($data['class_id']) || $data['class_id'] === null) {
+            $errors[] = "Valid Class is required";
+        }
+        if (!isset($data['section_id']) || $data['section_id'] === null) {
+            $errors[] = "Valid Section is required";
         }
         
         // If there are errors, throw exception

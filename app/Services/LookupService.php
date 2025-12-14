@@ -38,7 +38,7 @@ class LookupService
     ];
     
     /**
-     * Seed default categories and family categories if they don't exist
+     * Seed default categories, family categories, and sections if they don't exist
      */
     public static function seedDefaults(): void
     {
@@ -46,6 +46,7 @@ class LookupService
         
         self::seedFamilyCategories();
         self::seedCategories();
+        self::seedSections();
     }
     
     /**
@@ -92,6 +93,31 @@ class LookupService
         foreach (self::DEFAULT_CATEGORIES as $primaryName => $synonyms) {
             try {
                 Lookup::createCategory($primaryName);
+            } catch (Exception $e) {
+                // Skip if already exists
+            }
+        }
+    }
+    
+    /**
+     * Seed default sections
+     */
+    private static function seedSections(): void
+    {
+        $pdo = DB::get();
+        
+        // Check if any exist
+        $stmt = $pdo->query("SELECT COUNT(*) FROM sections");
+        $count = (int)$stmt->fetchColumn();
+        
+        if ($count > 0) {
+            return; // Already seeded
+        }
+        
+        // Insert defaults (A through F)
+        foreach (self::DEFAULT_SECTIONS as $name) {
+            try {
+                Lookup::createSection($name);
             } catch (Exception $e) {
                 // Skip if already exists
             }
@@ -231,5 +257,70 @@ class LookupService
         $pdo = DB::get();
         $stmt = $pdo->query("SELECT name FROM categories ORDER BY id");
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+    
+    /**
+     * Map section name to ID with case-insensitive matching
+     * 
+     * @param string $name Section name (e.g., 'A', 'a', 'B')
+     * @return int|null Section ID or null if not found
+     */
+    public static function getSectionIdByName(string $name): ?int
+    {
+        if (empty($name)) {
+            return null;
+        }
+        
+        $pdo = DB::get();
+        $name = trim($name);
+        
+        // Case-insensitive match
+        $stmt = $pdo->prepare("SELECT id FROM sections WHERE LOWER(name) = LOWER(?)");
+        $stmt->execute([$name]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result) {
+            return (int)$result['id'];
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Map class name to ID with case-insensitive matching
+     * 
+     * @param string $name Class name (e.g., '1', '2', '8')
+     * @return int|null Class ID or null if not found
+     */
+    public static function getClassIdByName(string $name): ?int
+    {
+        if (empty($name)) {
+            return null;
+        }
+        
+        $pdo = DB::get();
+        $name = trim($name);
+        
+        // Try exact match first, then fuzzy
+        $stmt = $pdo->prepare("SELECT id FROM classes WHERE name = ?");
+        $stmt->execute([$name]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result) {
+            return (int)$result['id'];
+        }
+        
+        // Try as integer if numeric
+        if (is_numeric($name)) {
+            $stmt = $pdo->prepare("SELECT id FROM classes WHERE id = ?");
+            $stmt->execute([(int)$name]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($result) {
+                return (int)$result['id'];
+            }
+        }
+        
+        return null;
     }
 }
