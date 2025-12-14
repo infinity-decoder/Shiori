@@ -51,10 +51,6 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
     .stat-number { 
       font-size: 1.8rem; 
       font-weight: 700; 
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
     }
     .navbar-brand { 
       display: flex; 

@@ -1,9 +1,7 @@
-<?php View::partial('layouts/main.php', ['title' => $title]); ?>
-
 <div class="container">
     <div class="row mb-4">
         <div class="col">
-            <h1 class="h3 mb-2">Import Students from CSV</h1>
+            <h1 class="h3 mb-2 fw-bold">Import Students from CSV</h1>
             <p class="text-muted mb-0">Upload a CSV file to bulk import student records. Download the template below to ensure the correct format.</p>
         </div>
         <div class="col-auto">
@@ -35,7 +33,7 @@
             <div class="row align-items-center">
                 <div class="col">
                     <h5 class="mb-1"><i class="bi bi-file-earmark-spreadsheet me-2 text-primary"></i>CSV Template</h5>
-                    <p class="text-muted mb-0 small">Download the template file with the correct column structure. populate your data and upload it below.</p>
+                    <p class="text-muted mb-0 small">Download the template file with the correct column structure. Populate your data and upload it below.</p>
                 </div>
                 <div class="col-auto">
                     <a href="<?= $templateUrl ?>" class="btn btn-primary btn-lg" download>
@@ -255,6 +253,3 @@ function clearFile() {
     fileSelected.style.display = 'none';
 }
 </script>
-
-<?php View::partial('layouts/footer.php'); ?>
-

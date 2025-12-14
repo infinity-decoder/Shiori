@@ -70,6 +70,9 @@ require_once BASE_PATH . '/app/Models/Lookup.php';
 require_once BASE_PATH . '/app/Services/Validator.php';
 require_once BASE_PATH . '/app/Services/ImageService.php';
 require_once BASE_PATH . '/app/Services/ActivityLog.php';
+require_once BASE_PATH . '/app/Services/CSVTemplateService.php';
+require_once BASE_PATH . '/app/Services/ImportResult.php';
+require_once BASE_PATH . '/app/Services/CSVImportService.php';
 
 // Controllers
 require_once BASE_PATH . '/app/Controllers/AuthController.php';

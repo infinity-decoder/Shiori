@@ -384,91 +384,27 @@ class StudentController extends Controller
             $this->redirect('/students/import');
         }
 
-        $handle = fopen($file['tmp_name'], 'r');
-        if (!$handle) {
-            Auth::flash('error', 'Could not open file.');
-            $this->redirect('/students/import');
-        }
-
-        // Skip header row
-        fgetcsv($handle);
-
-        $count = 0;
-        $errors = [];
-        $rowNum = 1;
-        $skipped = 0;
-
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNum++;
+        // Use enterprise import service
+        require_once BASE_PATH . '/app/Services/CSVImportService.php';
+        
+        try {
+            $result = CSVImportService::importFile($file['tmp_name']);
             
-            // Expected columns (20 total): Roll No, Enrollment No, Student Name, Class ID, Section ID,
-            // Session, DOB, B-Form, Father Name, Father Occupation, CNIC, Mobile, Email,
-            // Category ID, Family Category ID, BPS, Religion, Caste, Domicile, Address
-            if (count($row) < 20) {
-                $errors[] = "Row $rowNum: Expected 20 columns, got " . count($row);
-                $skipped++;
-                continue;
+            // Flash success message
+            if ($result->isFullSuccess()) {
+                Auth::flash('success', $result->toFlashMessage());
+            } elseif ($result->isPartialSuccess()) {
+                Auth::flash('success', $result->toFlashMessage());
+                if (!empty($result->errors)) {
+                    Auth::flash('error', 'Import errors: ' . $result->getErrorSummary(5));
+                }
+            } elseif ($result->isCompleteFailure()) {
+                Auth::flash('error', $result->toFlashMessage() . ' ' . $result->getErrorSummary(5));
+            } else {
+                Auth::flash('error', 'No valid data found in CSV file');
             }
-
-            // Map CSV columns to database fields
-            $data = [
-                'roll_no' => trim($row[0]),
-                'enrollment_no' => trim($row[1]),
-                'student_name' => trim($row[2]),
-                'class_id' => (int)$row[3],
-                'section_id' => (int)$row[4],
-                'session' => trim($row[5]) ?: (date('Y') . '-' . (date('Y')+1)),
-                'dob' => trim($row[6]) ?: null,
-                'b_form' => trim($row[7]) ?: null,
-                'father_name' => trim($row[8]),
-                'father_occupation' => trim($row[9]) ?: null,
-                'cnic' => trim($row[10]) ?: null,
-                'mobile' => trim($row[11]) ?: null,
-                'email' => trim($row[12]) ?: null,
-                'category_id' => (int)$row[13] ?: 1,
-                'fcategory_id' => (int)$row[14] ?: 1,
-                'bps' => trim($row[15]) ? (int)$row[15] : null,
-                'religion' => trim($row[16]) ?: null,
-                'caste' => trim($row[17]) ?: null,
-                'domicile' => trim($row[18]) ?: null,
-                'address' => trim($row[19]) ?: null,
-            ];
-
-            // Basic validation
-            if (empty($data['student_name']) || empty($data['father_name'])) {
-                $errors[] = "Row $rowNum: Student Name and Father Name are required";
-                $skipped++;
-                continue;
-            }
-
-            try {
-                Student::create($data);
-                $count++;
-            } catch (Exception $e) {
-                $errors[] = "Row $rowNum: " . $e->getMessage();
-                $skipped++;
-            }
-        }
-        fclose($handle);
-
-        // Build success/error message
-        $messages = [];
-        if ($count > 0) {
-            $messages[] = "Successfully imported $count student(s)";
-        }
-        if ($skipped > 0) {
-            $messages[] = "Skipped $skipped row(s) due to errors";
-        }
-        
-        if (!empty($messages)) {
-            Auth::flash('success', implode('. ', $messages));
-        }
-        
-        if (!empty($errors)) {
-            // Limit errors to avoid huge session cookie
-            $errStr = implode(' | ', array_slice($errors, 0, 5));
-            if (count($errors) > 5) $errStr .= '... (and ' . (count($errors) - 5) . ' more)';
-            Auth::flash('error', "Import errors: " . $errStr);
+        } catch (Exception $e) {
+            Auth::flash('error', 'Import failed: ' . $e->getMessage());
         }
         
         $this->redirect('/students');
@@ -591,42 +527,21 @@ class StudentController extends Controller
     public function downloadTemplate(): void
     {
         $this->requireAuth();
+        
+        require_once BASE_PATH . '/app/Services/CSVTemplateService.php';
+        
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="student_import_template.csv"');
         
         $out = fopen('php://output', 'w');
         
-        // Complete headers matching all database columns in proper order
-        fputcsv($out, [
-            'Roll No', 'Enrollment No', 'Student Name', 'Class ID', 'Section ID',
-            'Session', 'DOB', 'B-Form', 'Father Name', 'Father Occupation',
-            'CNIC', 'Mobile', 'Email', 'Category ID', 'Family Category ID',
-            'BPS', 'Religion', 'Caste', 'Domicile', 'Address'
-        ]);
+        // Get dynamic headers based on active fields
+        $headers = CSVTemplateService::generateHeaders();
+        fputcsv($out, $headers);
         
-        // Example row with sample data
-        fputcsv($out, [
-            '101',                    // Roll No
-            'ENR-2025-001',          // Enrollment No
-            'John Doe',              // Student Name
-            '1',                     // Class ID (must exist in classes table)
-            '1',                     // Section ID (must exist in sections table)
-            '2025-2026',             // Session
-            '2010-01-15',            // DOB (YYYY-MM-DD)
-            '1234567890123',         // B-Form (13 digits)
-            'Richard Doe',           // Father Name
-            'Engineer',              // Father Occupation
-            '1234567890123',         // CNIC (13 digits)
-            '03001234567',           // Mobile
-            'john.doe@example.com',  // Email
-            '1',                     // Category ID (must exist in categories table)
-            '1',                     // Family Category ID (must exist in family_categories table)
-            '17',                    // BPS
-            'Islam',                 // Religion
-            '',                      // Caste (optional)
-            'Karachi',               // Domicile
-            '123 Main Street'        // Address
-        ]);
+        // Get example row
+        $exampleRow = CSVTemplateService::generateExampleRow();
+        fputcsv($out, $exampleRow);
         
         fclose($out);
         exit;

@@ -11,42 +11,42 @@
 
   <div class="row g-3 mb-4" id="stats-row">
     <div class="col-12 col-md-4">
-      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #EBF4FF 0%, #DCEDFF 100%);">
+      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%); border-left: 4px solid #3B82F6;">
         <div class="d-flex align-items-center h-100">
-          <div class="me-3 fs-1 text-primary">
+          <div class="me-3 fs-1" style="color: #60A5FA;">
             <i class="bi bi-people-fill"></i>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Total Students</div>
-            <div id="totalStudents" class="stat-number">—</div>
+            <div class="small fw-semibold text-uppercase" style="color: #93C5FD; opacity: 0.9;">Total Students</div>
+            <div id="totalStudents" class="stat-number" style="color: #DBEAFE; font-size: 2rem;">—</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="col-12 col-md-4">
-      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #E6FFFA 0%, #C3F5E8 100%);">
+      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #065F46 0%, #047857 100%); border-left: 4px solid #10B981;">
         <div class="d-flex align-items-center h-100">
-          <div class="me-3 fs-1 text-success">
+          <div class="me-3 fs-1" style="color: #34D399;">
             <i class="bi bi-journal-bookmark"></i>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Total Classes</div>
-            <div id="totalClasses" class="stat-number">—</div>
+            <div class="small fw-semibold text-uppercase" style="color: #6EE7B7; opacity: 0.9;">Total Classes</div>
+            <div id="totalClasses" class="stat-number" style="color: #D1FAE5; font-size: 2rem;">—</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="col-12 col-md-4">
-      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #FFF4E6 0%, #FFE0B2 100%);">
+      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #92400E 0%, #B45309 100%); border-left: 4px solid #F59E0B;">
         <div class="d-flex align-items-center h-100">
-          <div class="me-3 fs-1 text-warning">
+          <div class="me-3 fs-1" style="color: #FBBF24;">
             <i class="bi bi-diagram-3"></i>
           </div>
           <div>
-            <div class="text-muted small fw-semibold text-uppercase">Total Sections</div>
-            <div id="totalSections" class="stat-number">—</div>
+            <div class="small fw-semibold text-uppercase" style="color: #FCD34D; opacity: 0.9;">Total Sections</div>
+            <div id="totalSections" class="stat-number" style="color: #FEF3C7; font-size: 2rem;">—</div>
           </div>
         </div>
       </div>
@@ -68,16 +68,16 @@
     <div class="col-12 col-lg-6">
       <div class="card card-soft p-3 h-100">
         <div class="card-body">
-          <h5 class="card-title mb-3 fw-semibold"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Quick Actions</h5>
+          <h5 class="card-title mb-3 fw-semibold"><i class="bi bi-lightning-charge-fill me-2" style="color: #F59E0B;"></i>Quick Actions</h5>
           <p class="text-muted small">Manage student records, import data, and perform administrative tasks.</p>
           <div class="d-grid gap-2">
-            <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary btn-lg">
+            <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary">
               <i class="bi bi-plus-lg me-2"></i>Add Student Record
             </a>
-            <a href="<?= $baseUrl; ?>/students" class="btn btn-outline-primary btn-lg">
+            <a href="<?= $baseUrl; ?>/students" class="btn btn-outline-primary">
               <i class="bi bi-list-ul me-2"></i>View All Students
             </a>
-            <button class="btn btn-outline-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#searchModal">
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal">
               <i class="bi bi-search me-2"></i>Search Students
             </button>
             <div class="row g-2 mt-1">
