@@ -11,42 +11,42 @@
 
   <div class="row g-3 mb-4" id="stats-row">
     <div class="col-12 col-md-4">
-      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%); border-left: 4px solid #3B82F6;">
+      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-left: 4px solid #60A5FA;">
         <div class="d-flex align-items-center h-100">
-          <div class="me-3 fs-1" style="color: #60A5FA;">
+          <div class="me-3 fs-1" style="color: #93C5FD;">
             <i class="bi bi-people-fill"></i>
           </div>
           <div>
-            <div class="small fw-semibold text-uppercase" style="color: #93C5FD; opacity: 0.9;">Total Students</div>
-            <div id="totalStudents" class="stat-number" style="color: #DBEAFE; font-size: 2rem;">—</div>
+            <div class="small fw-semibold text-uppercase" style="color: #CBD5E1; opacity: 0.85;">Total Students</div>
+            <div id="totalStudents" class="stat-number" style="color: #F1F5F9; font-size: 2rem;">—</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="col-12 col-md-4">
-      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #065F46 0%, #047857 100%); border-left: 4px solid #10B981;">
+      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #064E3B 0%, #065F46 100%); border-left: 4px solid #34D399;">
         <div class="d-flex align-items-center h-100">
-          <div class="me-3 fs-1" style="color: #34D399;">
+          <div class="me-3 fs-1" style="color: #6EE7B7;">
             <i class="bi bi-journal-bookmark"></i>
           </div>
           <div>
-            <div class="small fw-semibold text-uppercase" style="color: #6EE7B7; opacity: 0.9;">Total Classes</div>
-            <div id="totalClasses" class="stat-number" style="color: #D1FAE5; font-size: 2rem;">—</div>
+            <div class="small fw-semibold text-uppercase" style="color: #A7F3D0; opacity: 0.85;">Total Classes</div>
+            <div id="totalClasses" class="stat-number" style="color: #ECFDF5; font-size: 2rem;">—</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="col-12 col-md-4">
-      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #92400E 0%, #B45309 100%); border-left: 4px solid #F59E0B;">
+      <div class="card card-soft p-3 h-100" style="background: linear-gradient(135deg, #78350F 0%, #92400E 100%); border-left: 4px solid #FBBF24;">
         <div class="d-flex align-items-center h-100">
-          <div class="me-3 fs-1" style="color: #FBBF24;">
+          <div class="me-3 fs-1" style="color: #FCD34D;">
             <i class="bi bi-diagram-3"></i>
           </div>
           <div>
-            <div class="small fw-semibold text-uppercase" style="color: #FCD34D; opacity: 0.9;">Total Sections</div>
-            <div id="totalSections" class="stat-number" style="color: #FEF3C7; font-size: 2rem;">—</div>
+            <div class="small fw-semibold text-uppercase" style="color: #FED7AA; opacity: 0.85;">Total Sections</div>
+            <div id="totalSections" class="stat-number" style="color: #FFFBEB; font-size: 2rem;">—</div>
           </div>
         </div>
       </div>

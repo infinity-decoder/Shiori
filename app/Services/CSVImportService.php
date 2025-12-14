@@ -2,6 +2,7 @@
 
 require_once BASE_PATH . '/app/Services/ImportResult.php';
 require_once BASE_PATH . '/app/Services/CSVTemplateService.php';
+require_once BASE_PATH . '/app/Services/LookupService.php';
 
 /**
  * CSVImportService
@@ -147,19 +148,42 @@ class CSVImportService
             $value = isset($row[$colIndex]) ? trim($row[$colIndex]) : '';
             $fieldName = $fieldMeta['name'];
             
-            // Validate field
-            $error = self::validateField($fieldName, $value, $fieldMeta);
-            if ($error) {
-                $errors[] = "{$fieldMeta['label']}: {$error}";
+            // Special handling for Category and Family Category (name-to-ID mapping)
+            if ($fieldName === 'category_id') {
+                if (!empty($value)) {
+                    $categoryId = LookupService::getCategoryIdByName($value);
+                    $data['category_id'] = $categoryId;
+                }
+                continue; // Skip normal validation
+            }
+            
+            if ($fieldName === 'fcategory_id') {
+                if (!empty($value)) {
+                    $fcategoryId = LookupService::getFamilyCategoryIdByName($value);
+                    $data['fcategory_id'] = $fcategoryId;
+                }
+                continue; // Skip normal validation
+            }
+            
+            // Validate field only if it has a value OR is truly required
+            if (!empty($value) || $fieldMeta['required']) {
+                $error = self::validateField($fieldName, $value, $fieldMeta);
+                if ($error) {
+                    $errors[] = "{$fieldMeta['label']}: {$error}";
+                } else {
+                    // Convert value based on type
+                    $data[$fieldName] = self::convertValue($value, $fieldMeta);
+                }
             } else {
-                // Convert value based on type
-                $data[$fieldName] = self::convertValue($value, $fieldMeta);
+                // Empty optional field - set to null
+                $data[$fieldName] = null;
             }
         }
         
-        // Check required fields
-        $requiredFields = ['roll_no', 'enrollment_no', 'student_name', 'father_name', 'class_id', 'section_id', 'category_id', 'fcategory_id'];
-        foreach ($requiredFields as $req) {
+        // LENIENT VALIDATION: Only check truly mandatory fields
+        $strictlyRequired = ['roll_no', 'enrollment_no', 'student_name', 'father_name', 'class_id', 'section_id'];
+        
+        foreach ($strictlyRequired as $req) {
             if (!isset($data[$req]) || $data[$req] === '' || $data[$req] === null) {
                 $errors[] = ucfirst(str_replace('_', ' ', $req)) . " is required";
             }
@@ -170,14 +194,16 @@ class CSVImportService
             throw new Exception(implode('; ', $errors));
         }
         
-        // Set defaults for optional fields
+        // Set SMART defaults for optional fields
         if (empty($data['session'])) {
             $data['session'] = date('Y') . '-' . (date('Y') + 1);
         }
-        if (empty($data['category_id'])) {
+        
+        // Category and Family Category default to 1 if not mapped
+        if (!isset($data['category_id']) || $data['category_id'] === null) {
             $data['category_id'] = 1;
         }
-        if (empty($data['fcategory_id'])) {
+        if (!isset($data['fcategory_id']) || $data['fcategory_id'] === null) {
             $data['fcategory_id'] = 1;
         }
         

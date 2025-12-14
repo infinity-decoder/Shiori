@@ -108,10 +108,10 @@ class CSVTemplateService
      */
     private static function isRequired(string $fieldName): bool
     {
+        // LENIENT: Only truly required fields for student record
         $requiredFields = [
             'roll_no', 'enrollment_no', 'class_id', 'section_id',
-            'student_name', 'dob', 'father_name', 'father_occupation',
-            'cnic', 'mobile', 'address', 'category_id', 'fcategory_id'
+            'student_name', 'father_name'
         ];
         
         return in_array($fieldName, $requiredFields, true);
@@ -187,8 +187,8 @@ class CSVTemplateService
             'cnic' => '1234567890123',
             'mobile' => '03001234567',
             'email' => 'john.doe@example.com',
-            'category_id' => '1',
-            'fcategory_id' => '1',
+            'category_id' => 'Civilian',  // Use name, not ID
+            'fcategory_id' => 'Nuclear Family',  // Use name, not ID
             'bps' => '17',
             'religion' => 'Islam',
             'caste' => 'Rajput',

@@ -89,7 +89,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
   <div class="container">
     <a class="navbar-brand" href="<?= $baseUrl; ?>/dashboard">
-      <img src="<?= $baseUrl; ?>/../.gemini/antigravity/brain/8ab7e29b-0f05-44b0-95f4-e8ba37231927/student_management_logo_1765717032854.png" alt="Logo">
+      <i class="bi bi-mortarboard-fill fs-4 me-2" style="color: #1E40AF;"></i>
       <span><?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></span>
     </a>
     <div class="collapse navbar-collapse" id="navbarNav">
