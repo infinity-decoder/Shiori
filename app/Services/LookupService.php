@@ -29,13 +29,14 @@ class LookupService
     // Default Category values with synonyms
     const DEFAULT_CATEGORIES = [
         'Civilian' => ['Civilian', 'Civ'],
-       
-
- 'FGEI' => ['FGEI'],
+        'FGEI' => ['FGEI'],
         'Army Serving' => ['Army Serving', 'Army-Serving'],
         'Army Retired' => ['Army Retired', 'Army-Retired'],
         'Defence Paid' => ['Defence Paid', 'Defense Paid', 'Defence-Paid', 'Defense-Paid']
     ];
+    
+    // Default Section values
+    const DEFAULT_SECTIONS = ['A', 'B', 'C', 'D', 'E', 'F'];
     
     /**
      * Seed default categories, family categories, and sections if they don't exist
