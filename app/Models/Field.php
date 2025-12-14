@@ -87,7 +87,7 @@ class Field
         }
 
         // Default fields with logical order and sections
-        // Order follows: Roll/Enrollment → Student Info → Father Info → Family/Home → Photo
+        // Order follows: Roll/Enrollment → Student Info → Father Info (with BPS) → Contact → Family/Home → Photo
         $defaults = [
             // Student Identification (1-8)
             ['roll_no', 'Roll No', 'text', 'main', 1],
@@ -99,17 +99,19 @@ class Field
             ['dob', 'Date of Birth', 'date', 'main', 7],
             ['b_form', 'B-Form', 'text', 'main', 8],
             
-            // Father Information (9-13)
+            // Father Information (9-11) - BPS moved here
             ['father_name', 'Father Name', 'text', 'main', 9],
             ['father_occupation', 'Father Occupation', 'text', 'main', 10],
-            ['cnic', 'CNIC', 'text', 'main', 11],
-            ['mobile', 'Mobile', 'text', 'main', 12],
-            ['email', 'Email', 'text', 'main', 13],
+            ['bps', 'BPS', 'number', 'main', 11],
             
-            // Category & Classification (14-19)
-            ['category_id', 'Category', 'select', 'main', 14],
-            ['fcategory_id', 'Family Category', 'select', 'main', 15],
-            ['bps', 'BPS', 'number', 'main', 16],
+            // Contact Information (12-14)
+            ['cnic', 'CNIC', 'text', 'main', 12],
+            ['mobile', 'Mobile', 'text', 'main', 13],
+            ['email', 'Email', 'text', 'main', 14],
+            
+            // Category & Classification (15-19)
+            ['category_id', 'Category', 'select', 'main', 15],
+            ['fcategory_id', 'Family Category', 'select', 'main', 16],
             ['religion', 'Religion', 'text', 'main', 17],
             ['caste', 'Caste', 'text', 'main', 18],
             ['domicile', 'Domicile', 'text', 'main', 19],

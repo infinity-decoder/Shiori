@@ -103,9 +103,13 @@ class StudentController extends Controller
 
         $validation = Validator::validateStudent($_POST, $_FILES);
         if (!empty($validation['errors'])) {
+            Auth::setOldInput($_POST); // Preserve form data
             Auth::flash('error', implode(' | ', $validation['errors']));
             $this->redirect('/students/create');
         }
+
+        // Clear old input on successful validation
+        Auth::flushOldInput();
 
         $data = $validation['data'];
         try {
@@ -147,6 +151,7 @@ class StudentController extends Controller
                 'enrollment_no' => $data['enrollment_no'] ?? '',
             ]);
 
+            Auth::flushOldInput(); // Clear old input on success
             Auth::flash('success', 'Student added successfully.');
             $this->redirect('/students');
         } catch (PDOException $e) {
@@ -229,9 +234,13 @@ class StudentController extends Controller
 
         $validation = Validator::validateStudent($_POST, $_FILES, true);
         if (!empty($validation['errors'])) {
+            Auth::setOldInput($_POST); // Preserve form data
             Auth::flash('error', implode(' | ', $validation['errors']));
             $this->redirect('/students/edit?id=' . $id);
         }
+
+        // Clear old input on successful validation
+        Auth::flushOldInput();
 
         $data = $validation['data'];
         
@@ -269,6 +278,7 @@ class StudentController extends Controller
                 'roll_no' => $data['roll_no'] ?? '',
             ]);
 
+            Auth::flushOldInput(); // Clear old input on success
             Auth::flash('success', 'Student updated successfully.');
             $this->redirect('/students');
         } catch (PDOException $e) {
@@ -380,52 +390,85 @@ class StudentController extends Controller
             $this->redirect('/students/import');
         }
 
-        // Skip header
+        // Skip header row
         fgetcsv($handle);
 
         $count = 0;
         $errors = [];
         $rowNum = 1;
+        $skipped = 0;
 
         while (($row = fgetcsv($handle)) !== false) {
             $rowNum++;
-            // Basic mapping: Roll, Enrollment, Name, Father Name, ClassID, SectionID
-            // Expected format: Roll, Enrollment, Name, Father, ClassID, SectionID
-            if (count($row) < 6) {
-                $errors[] = "Row $rowNum: Not enough columns.";
+            
+            // Expected columns (20 total): Roll No, Enrollment No, Student Name, Class ID, Section ID,
+            // Session, DOB, B-Form, Father Name, Father Occupation, CNIC, Mobile, Email,
+            // Category ID, Family Category ID, BPS, Religion, Caste, Domicile, Address
+            if (count($row) < 20) {
+                $errors[] = "Row $rowNum: Expected 20 columns, got " . count($row);
+                $skipped++;
                 continue;
             }
 
+            // Map CSV columns to database fields
             $data = [
-                'roll_no' => $row[0],
-                'enrollment_no' => $row[1],
-                'student_name' => $row[2],
-                'father_name' => $row[3],
-                'class_id' => (int)$row[4],
-                'section_id' => (int)$row[5],
-                // Defaults
-                'session' => date('Y') . '-' . (date('Y')+1),
-                'category_id' => 1, // Default
-                'fcategory_id' => 1, // Default
+                'roll_no' => trim($row[0]),
+                'enrollment_no' => trim($row[1]),
+                'student_name' => trim($row[2]),
+                'class_id' => (int)$row[3],
+                'section_id' => (int)$row[4],
+                'session' => trim($row[5]) ?: (date('Y') . '-' . (date('Y')+1)),
+                'dob' => trim($row[6]) ?: null,
+                'b_form' => trim($row[7]) ?: null,
+                'father_name' => trim($row[8]),
+                'father_occupation' => trim($row[9]) ?: null,
+                'cnic' => trim($row[10]) ?: null,
+                'mobile' => trim($row[11]) ?: null,
+                'email' => trim($row[12]) ?: null,
+                'category_id' => (int)$row[13] ?: 1,
+                'fcategory_id' => (int)$row[14] ?: 1,
+                'bps' => trim($row[15]) ? (int)$row[15] : null,
+                'religion' => trim($row[16]) ?: null,
+                'caste' => trim($row[17]) ?: null,
+                'domicile' => trim($row[18]) ?: null,
+                'address' => trim($row[19]) ?: null,
             ];
+
+            // Basic validation
+            if (empty($data['student_name']) || empty($data['father_name'])) {
+                $errors[] = "Row $rowNum: Student Name and Father Name are required";
+                $skipped++;
+                continue;
+            }
 
             try {
                 Student::create($data);
                 $count++;
             } catch (Exception $e) {
                 $errors[] = "Row $rowNum: " . $e->getMessage();
+                $skipped++;
             }
         }
         fclose($handle);
 
+        // Build success/error message
+        $messages = [];
         if ($count > 0) {
-            Auth::flash('success', "Imported $count students.");
+            $messages[] = "Successfully imported $count student(s)";
         }
+        if ($skipped > 0) {
+            $messages[] = "Skipped $skipped row(s) due to errors";
+        }
+        
+        if (!empty($messages)) {
+            Auth::flash('success', implode('. ', $messages));
+        }
+        
         if (!empty($errors)) {
             // Limit errors to avoid huge session cookie
             $errStr = implode(' | ', array_slice($errors, 0, 5));
-            if (count($errors) > 5) $errStr .= '... (and more)';
-            Auth::flash('error', "Errors: " . $errStr);
+            if (count($errors) > 5) $errStr .= '... (and ' . (count($errors) - 5) . ' more)';
+            Auth::flash('error', "Import errors: " . $errStr);
         }
         
         $this->redirect('/students');
@@ -552,10 +595,39 @@ class StudentController extends Controller
         header('Content-Disposition: attachment; filename="student_import_template.csv"');
         
         $out = fopen('php://output', 'w');
-        // Standard headers matching the import logic
-        fputcsv($out, ['Roll No', 'Enrollment No', 'Student Name', 'Father Name', 'Class ID', 'Section ID']);
-        // Example row
-        fputcsv($out, ['101', 'ENR-2025-001', 'John Doe', 'Richard Doe', '1', '1']);
+        
+        // Complete headers matching all database columns in proper order
+        fputcsv($out, [
+            'Roll No', 'Enrollment No', 'Student Name', 'Class ID', 'Section ID',
+            'Session', 'DOB', 'B-Form', 'Father Name', 'Father Occupation',
+            'CNIC', 'Mobile', 'Email', 'Category ID', 'Family Category ID',
+            'BPS', 'Religion', 'Caste', 'Domicile', 'Address'
+        ]);
+        
+        // Example row with sample data
+        fputcsv($out, [
+            '101',                    // Roll No
+            'ENR-2025-001',          // Enrollment No
+            'John Doe',              // Student Name
+            '1',                     // Class ID (must exist in classes table)
+            '1',                     // Section ID (must exist in sections table)
+            '2025-2026',             // Session
+            '2010-01-15',            // DOB (YYYY-MM-DD)
+            '1234567890123',         // B-Form (13 digits)
+            'Richard Doe',           // Father Name
+            'Engineer',              // Father Occupation
+            '1234567890123',         // CNIC (13 digits)
+            '03001234567',           // Mobile
+            'john.doe@example.com',  // Email
+            '1',                     // Category ID (must exist in categories table)
+            '1',                     // Family Category ID (must exist in family_categories table)
+            '17',                    // BPS
+            'Islam',                 // Religion
+            '',                      // Caste (optional)
+            'Karachi',               // Domicile
+            '123 Main Street'        // Address
+        ]);
+        
         fclose($out);
         exit;
     }

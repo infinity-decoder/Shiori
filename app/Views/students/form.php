@@ -13,10 +13,17 @@ for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
     $sessions[] = sprintf('%04d-%04d', $y, $y + 1);
 }
 
-// Helper to get value
+// Helper to get value - check old input first, then student data
 $getValue = function($name) use ($student) {
+    // Priority: old_input > student data > empty string
+    if (Auth::hasOldInput($name)) {
+        return htmlspecialchars(Auth::getOldInput($name));
+    }
     return htmlspecialchars($student[$name] ?? '');
 };
+
+// Define required fields for asterisk display
+$requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'cnic', 'mobile', 'address'];
 ?>
 <div class="container">
   <div class="row mb-3 align-items-center">
@@ -54,7 +61,12 @@ $getValue = function($name) use ($student) {
                 ?>
                 
                 <div class="<?= $colClass ?>">
-                  <label class="form-label"><?= htmlspecialchars($field['label']) ?></label>
+                  <label class="form-label">
+                    <?= htmlspecialchars($field['label']) ?>
+                    <?php if (in_array($name, $requiredFields)): ?>
+                      <span class="text-danger" title="Required field">*</span>
+                    <?php endif; ?>
+                  </label>
                   
                   <?php if ($name === 'session'): ?>
                     <select name="session" class="form-select form-select-lg">
@@ -98,10 +110,22 @@ $getValue = function($name) use ($student) {
                     </select>
 
                   <?php elseif ($field['type'] === 'textarea' || $name === 'address'): ?>
-                    <textarea name="<?= $name ?>" rows="3" class="form-control"><?= $getValue($name) ?></textarea>
+                    <textarea 
+                      name="<?= $name ?>" 
+                      rows="3" 
+                      class="form-control"
+                      <?= in_array($name, $requiredFields) ? 'required' : '' ?>
+                    ><?= $getValue($name) ?></textarea>
 
                   <?php elseif ($field['type'] === 'date' || $name === 'dob'): ?>
-                    <input id="<?= $name === 'dob' ? 'dob' : '' ?>" name="<?= $name ?>" type="date" class="form-control form-control-lg" value="<?= $getValue($name) ?>">
+                    <input 
+                      id="<?= $name === 'dob' ? 'dob' : '' ?>" 
+                      name="<?= $name ?>" 
+                      type="date" 
+                      class="form-control form-control-lg" 
+                      value="<?= $getValue($name) ?>"
+                      <?= in_array($name, $requiredFields) ? 'required' : '' ?>
+                    >
 
                   <?php elseif ($field['type'] === 'select'): ?>
                     <?php 
@@ -130,7 +154,31 @@ $getValue = function($name) use ($student) {
                     </div>
 
                   <?php else: ?>
-                    <input name="<?= $name ?>" type="<?= $field['type'] === 'number' ? 'number' : 'text' ?>" class="form-control form-control-lg" value="<?= $getValue($name) ?>">
+                    <?php if ($name === 'b_form' || $name === 'cnic'): ?>
+                      <!-- Special handling for B-Form and CNIC with 13-digit validation -->
+                      <input 
+                        id="<?= $name ?>" 
+                        name="<?= $name ?>" 
+                        type="text" 
+                        class="form-control form-control-lg" 
+                        value="<?= $getValue($name) ?>" 
+                        maxlength="13" 
+                        pattern="[0-9]{13}" 
+                        data-validate="13-digits"
+                        <?= in_array($name, $requiredFields) ? 'required' : '' ?>
+                        placeholder="13-digit <?= $name === 'b_form' ? 'B-Form' : 'CNIC' ?> number"
+                      >
+                      <div class="invalid-feedback-custom text-danger small mt-1" id="<?= $name ?>-error" style="display:none;"></div>
+                    <?php else: ?>
+                      <!-- Standard text/number inputs -->
+                      <input 
+                        name="<?= $name ?>" 
+                        type="<?= $field['type'] === 'number' ? 'number' : 'text' ?>" 
+                        class="form-control form-control-lg" 
+                        value="<?= $getValue($name) ?>"
+                        <?= in_array($name, $requiredFields) ? 'required' : '' ?>
+                      >
+                    <?php endif; ?>
                   <?php endif; ?>
                 </div>
               <?php endforeach; ?>
@@ -207,5 +255,61 @@ $getValue = function($name) use ($student) {
           labelIdle: 'Drag & Drop your photo or <span class="filepond--label-action">Browse</span>',
         });
     }
+  })();
+
+  // Real-time validation for B-Form and CNIC fields (13 digits, numeric only)
+  (function () {
+    const fieldsToValidate = ['b_form', 'cnic'];
+    
+    fieldsToValidate.forEach(fieldName => {
+      const field = document.getElementById(fieldName);
+      if (!field) return;
+      
+      const errorDiv = document.getElementById(fieldName + '-error');
+      
+      function validateField() {
+        const value = field.value;
+        const digitsOnly = value.replace(/\D/g, '');
+        const length = digitsOnly.length;
+        
+        // Remove non-numeric characters
+        if (value !== digitsOnly) {
+          field.value = digitsOnly;
+        }
+        
+        // Show error if not empty and not 13 digits
+        if (digitsOnly.length > 0 && digitsOnly.length < 13) {
+          const fieldLabel = fieldName === 'b_form' ? 'B-Form' : 'CNIC';
+          errorDiv.textContent = `${fieldLabel} must be exactly 13 digits (currently ${length}/13)`;
+          errorDiv.style.display = 'block';
+          field.classList.add('is-invalid');
+          field.classList.remove('is-valid');
+        } else if (digitsOnly.length === 13) {
+          errorDiv.style.display = 'none';
+          field.classList.remove('is-invalid');
+          field.classList.add('is-valid');
+        } else {
+          errorDiv.style.display = 'none';
+          field.classList.remove('is-invalid');
+          field.classList.remove('is-valid');
+        }
+      }
+      
+      // Validate on input (real-time)
+      field.addEventListener('input', validateField);
+      
+      // Validate on blur
+      field.addEventListener('blur', validateField);
+      
+      // Prevent paste of non-numeric content
+      field.addEventListener('paste', function(e) {
+        setTimeout(validateField, 10);
+      });
+      
+      // Initial validation if field has value
+      if (field.value) {
+        validateField();
+      }
+    });
   })();
 </script>

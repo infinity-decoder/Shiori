@@ -68,4 +68,44 @@ class Auth
     {
         return self::hasRole('viewer');
     }
+
+    /**
+     * Store old input data for form repopulation after validation errors
+     */
+    public static function setOldInput(array $data): void
+    {
+        $_SESSION['old_input'] = $data;
+    }
+
+    /**
+     * Retrieve old input value by key
+     */
+    public static function getOldInput(string $key = null, $default = '')
+    {
+        if ($key === null) {
+            $oldInput = $_SESSION['old_input'] ?? [];
+            unset($_SESSION['old_input']);
+            return $oldInput;
+        }
+        return $_SESSION['old_input'][$key] ?? $default;
+    }
+
+    /**
+     * Check if old input exists
+     */
+    public static function hasOldInput(string $key = null): bool
+    {
+        if ($key === null) {
+            return !empty($_SESSION['old_input']);
+        }
+        return isset($_SESSION['old_input'][$key]);
+    }
+
+    /**
+     * Clear old input data
+     */
+    public static function flushOldInput(): void
+    {
+        unset($_SESSION['old_input']);
+    }
 }
