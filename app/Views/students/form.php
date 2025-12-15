@@ -227,7 +227,7 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
             </div>
             
             <script>
-            (function() {
+            document.addEventListener('DOMContentLoaded', function() {
               const photoInput = document.getElementById('photoFile');
               const preview = document.getElementById('photoPreview');
               const previewContainer = document.getElementById('photoPreviewContainer');
@@ -235,38 +235,39 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               const currentPhoto = document.getElementById('currentPhoto');
               const placeholderPhoto = document.getElementById('placeholderPhoto');
               
+              if (!photoInput) return;
+
               photoInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
+                
+                // Reset errors
                 errorDiv.textContent = '';
                 errorDiv.style.display = 'none';
                 
-                if (!file) {
-                  previewContainer.style.display = 'none';
-                  return;
-                }
+                if (!file) return;
+                
+                console.log('Photo selected:', file.name, file.type, file.size);
                 
                 // Validate file type
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-                if (!validTypes.includes(file.type)) {
-                  errorDiv.textContent = '❌ Invalid file type. Only JPG, PNG, and WebP images are allowed.';
+                // Note: file.type might be empty on some systems, but usually present for images
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+                if (file.type && !validTypes.includes(file.type)) {
+                  errorDiv.textContent = '❌ Invalid file type. Only JPG, PNG, and WebP allowed.';
                   errorDiv.style.display = 'block';
                   photoInput.value = '';
-                  previewContainer.style.display = 'none';
                   return;
                 }
                 
-                // Validate file size (3MB)
-                const maxSize = 3 * 1024 * 1024; // 3MB in bytes
-                if (file.size > maxSize) {
-                  const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                  errorDiv.textContent = `❌ File too large (${sizeMB}MB). Maximum size is 3MB.`;
-                  errorDiv.style.display = 'block';
-                  photoInput.value = '';
-                  previewContainer.style.display = 'none';
-                  return;
+                // Validate size (3MB)
+                if (file.size > 3 * 1024 * 1024) {
+                   const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                   errorDiv.textContent = `❌ File too large (${sizeMB}MB). Max 3MB.`;
+                   errorDiv.style.display = 'block';
+                   photoInput.value = '';
+                   return;
                 }
                 
-                // Hide existing photo/placeholder
+                // Hide current display
                 if (currentPhoto) currentPhoto.style.display = 'none';
                 if (placeholderPhoto) placeholderPhoto.style.display = 'none';
                 
@@ -279,17 +280,17 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                 reader.readAsDataURL(file);
               });
               
+              // Expose clear function globally for the button
               window.clearPhoto = function() {
                 photoInput.value = '';
                 previewContainer.style.display = 'none';
-                errorDiv.textContent = '';
                 errorDiv.style.display = 'none';
                 
-                // Restore original photo/placeholder
-                if (currentPhoto) currentPhoto.style.display = 'block';
-                if (placeholderPhoto) placeholderPhoto.style.display = 'flex';
+                // Restore original state (remove inline display:none to let CSS/Classes take over)
+                if (currentPhoto) currentPhoto.style.display = '';
+                if (placeholderPhoto) placeholderPhoto.style.display = '';
               };
-            })();
+            });
             </script>
             <?php endif; ?>
 
