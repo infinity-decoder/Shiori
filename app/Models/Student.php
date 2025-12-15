@@ -203,10 +203,12 @@ class Student
         INSERT INTO students
             (roll_no, enrollment_no, session, class_id, section_id, student_name, dob, b_form,
              father_name, cnic, mobile, address, father_occupation, category_id, fcategory_id, email, photo_path,
+             photo_blob, photo_mime, photo_hash, thumbnail_blob,
              bps, religion, caste, domicile)
         VALUES
             (:roll_no, :enrollment_no, :session, :class_id, :section_id, :student_name, :dob, :b_form,
              :father_name, :cnic, :mobile, :address, :father_occupation, :category_id, :fcategory_id, :email, :photo_path,
+             :photo_blob, :photo_mime, :photo_hash, :thumbnail_blob,
              :bps, :religion, :caste, :domicile)
     ");
     $stmt->execute([
