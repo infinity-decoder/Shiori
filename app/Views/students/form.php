@@ -96,33 +96,110 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                     </select>
 
                   <?php elseif ($name === 'class_id'): ?>
+                    <?php
+                    // Preserve inactive class if selected
+                    $availableClasses = $lookups['classes'];
+                    if (!empty($student['class_id'])) {
+                        $found = false;
+                        foreach ($availableClasses as $c) {
+                            if ($c['id'] == $student['class_id']) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found && !empty($student['class_name'])) {
+                            // Add the inactive class to the list
+                            array_unshift($availableClasses, [
+                                'id' => $student['class_id'],
+                                'name' => $student['class_name'] . ' (Inactive)'
+                            ]);
+                        }
+                    }
+                    ?>
                     <select name="class_id" class="form-select form-select-lg" required>
                       <option value="">Select class</option>
-                      <?php foreach ($lookups['classes'] as $c): ?>
+                      <?php foreach ($availableClasses as $c): ?>
                         <option value="<?= $c['id']; ?>" <?= (isset($student['class_id']) && $student['class_id'] == $c['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($c['name']); ?></option>
                       <?php endforeach; ?>
                     </select>
 
                   <?php elseif ($name === 'section_id'): ?>
+                    <?php
+                    // Preserve inactive section if selected
+                    $availableSections = $lookups['sections'];
+                    if (!empty($student['section_id'])) {
+                        $found = false;
+                        foreach ($availableSections as $sct) {
+                            if ($sct['id'] == $student['section_id']) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found && !empty($student['section_name'])) {
+                            array_unshift($availableSections, [
+                                'id' => $student['section_id'],
+                                'name' => $student['section_name'] . ' (Inactive)'
+                            ]);
+                        }
+                    }
+                    ?>
                     <select name="section_id" class="form-select form-select-lg" required>
                       <option value="">Select section</option>
-                      <?php foreach ($lookups['sections'] as $sct): ?>
+                      <?php foreach ($availableSections as $sct): ?>
                         <option value="<?= $sct['id']; ?>" <?= (isset($student['section_id']) && $student['section_id'] == $sct['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($sct['name']); ?></option>
                       <?php endforeach; ?>
                     </select>
 
                   <?php elseif ($name === 'category_id'): ?>
+                    <?php
+                    // Preserve inactive category if selected
+                    $availableCategories = $lookups['categories'];
+                    if (!empty($student['category_id'])) {
+                        $found = false;
+                        foreach ($availableCategories as $cat) {
+                            if ($cat['id'] == $student['category_id']) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found && !empty($student['category_name'])) {
+                            array_unshift($availableCategories, [
+                                'id' => $student['category_id'],
+                                'name' => $student['category_name'] . ' (Inactive)'
+                            ]);
+                        }
+                    }
+                    ?>
                     <select name="category_id" class="form-select form-select-lg" required>
                       <option value="">Select category</option>
-                      <?php foreach ($lookups['categories'] as $cat): ?>
+                      <?php foreach ($availableCategories as $cat): ?>
                         <option value="<?= $cat['id']; ?>" <?= (isset($student['category_id']) && $student['category_id'] == $cat['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($cat['name']); ?></option>
                       <?php endforeach; ?>
                     </select>
 
                   <?php elseif ($name === 'fcategory_id'): ?>
+                    <?php
+                    // Preserve inactive family category if selected
+                    $availableFCategories = $lookups['familyCategories'];
+                    if (!empty($student['fcategory_id'])) {
+                        $found = false;
+                        foreach ($availableFCategories as $fc) {
+                            if ($fc['id'] == $student['fcategory_id']) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found && !empty($student['fcategory_name'])) {
+                            array_unshift($availableFCategories, [
+                                'id' => $student['fcategory_id'],
+                                'name' => $student['fcategory_name'] . ' (Inactive)'
+                            ]);
+                        }
+                    }
+                    ?>
                     <select name="fcategory_id" class="form-select form-select-lg" required>
                       <option value="">Select family category</option>
-                      <?php foreach ($lookups['familyCategories'] as $fc): ?>
+                      <?php foreach ($availableFCategories as $fc): ?>
                         <option value="<?= $fc['id']; ?>" <?= (isset($student['fcategory_id']) && $student['fcategory_id'] == $fc['id']) ? 'selected' : ''; ?>><?= htmlspecialchars($fc['name']); ?></option>
                       <?php endforeach; ?>
                     </select>

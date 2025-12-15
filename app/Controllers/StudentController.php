@@ -61,11 +61,11 @@ class StudentController extends Controller
         require_once BASE_PATH . '/app/Models/Session.php';
         
         $lookups = [
-            'classes'        => Lookup::getClasses(),
-            'sections'       => Lookup::getSections(),
-            'sessions'       => Lookup::getSessions(), // From database
-            'categories'     => Lookup::getCategories(),
-            'familyCategories' => Lookup::getFamilyCategories(),
+            'classes'        => Lookup::getClasses(true),
+            'sections'       => Lookup::getSections(true),
+            'sessions'       => Lookup::getSessions(), // Already active-only
+            'categories'     => Lookup::getCategories(true),
+            'familyCategories' => Lookup::getFamilyCategories(true),
         ];
         // Get active fields
         require_once BASE_PATH . '/app/Models/Field.php';
@@ -184,11 +184,11 @@ class StudentController extends Controller
         require_once BASE_PATH . '/app/Models/Session.php';
         
         $lookups = [
-            'classes'        => Lookup::getClasses(),
-            'sections'       => Lookup::getSections(),
-            'sessions'       => Lookup::getSessions(), // From database
-            'categories'     => Lookup::getCategories(),
-            'familyCategories' => Lookup::getFamilyCategories(),
+            'classes'        => Lookup::getClasses(true),
+            'sections'       => Lookup::getSections(true),
+            'sessions'       => Lookup::getSessions(), // Already active-only
+            'categories'     => Lookup::getCategories(true),
+            'familyCategories' => Lookup::getFamilyCategories(true),
         ];
         // Get active fields
         require_once BASE_PATH . '/app/Models/Field.php';
