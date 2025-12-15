@@ -97,25 +97,11 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
           <?php else: ?>
             <?php foreach ($students as $s): ?>
             <tr>
-              <?php
-                // Determine image to show: prefer thumbnail, then original, else placeholder
-                $uploadsDir = BASE_PATH . '/public/uploads/students';
-                $thumbName = 'thumb_' . ((int)$s['id']) . '.jpg';
-                $thumbPath = $uploadsDir . '/' . $thumbName;
-                $origFile  = $s['photo_path'] ?? '';
-                $origPath  = $uploadsDir . '/' . $origFile;
-                $imgUrl = null;
-                if (is_file($thumbPath)) {
-                    $imgUrl = $baseUrl . '/uploads/students/' . rawurlencode($thumbName);
-                } elseif ($origFile !== '' && is_file($origPath)) {
-                    $imgUrl = $baseUrl . '/uploads/students/' . rawurlencode($origFile);
-                }
-              ?>
               <td style="width:80px">
-                <img src="<?= $baseUrl ?>/students/thumbnail?id=<?= $s['id'] ?>" 
-                     alt="Student Photo" 
+                <img src="<?= getStudentImageUrl($s, $baseUrl) ?>" 
+                     alt="<?= htmlspecialchars($s['student_name']) ?>" 
                      style="height:56px; width:56px; object-fit:cover; border-radius:4px;"
-                     onerror="this.onerror=null;this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2256%22%20height%3D%2256%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2056%2056%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_18d9b7b6b6b%20text%20%7B%20fill%3A%23AAAAAA%3Bfont-weight%3Abold%3Bfont-family%3AArial%2C%20Helvetica%2C%20Open%20Sans%2C%20sans-serif%2C%20monospace%3Bfont-size%3A6pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_18d9b7b6b6b%22%3E%3Crect%20width%3D%2256%22%20height%3D%2256%22%20fill%3D%22%23EEEEEE%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%2212.134963274002075%22%20y%3D%2230.5%22%3E56x56%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';">
+                     loading="lazy">
               </td>
 
               <td><?= htmlspecialchars($s['roll_no']); ?></td>

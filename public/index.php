@@ -66,6 +66,10 @@ require_once BASE_PATH . '/app/Models/User.php';
 require_once BASE_PATH . '/app/Models/Student.php';
 require_once BASE_PATH . '/app/Models/Lookup.php';
 
+// Helpers
+require_once BASE_PATH . '/app/Core/Helpers.php';
+require_once BASE_PATH . '/app/Helpers/ImageHelper.php';
+
 // Services
 require_once BASE_PATH . '/app/Services/Validator.php';
 require_once BASE_PATH . '/app/Services/ImageService.php';
@@ -118,6 +122,7 @@ $router->get('/api/search', 'ApiController@search');
 
 // Student CRUD + extras
 $router->get('/students', 'StudentController@index');
+$router->get('/students/photo', 'StudentController@servePhoto');
 $router->get('/students/create', 'StudentController@create');
 $router->post('/students', 'StudentController@store');
 $router->get('/students/show', 'StudentController@show');      // ?id=#
