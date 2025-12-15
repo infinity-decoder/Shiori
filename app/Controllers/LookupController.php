@@ -395,6 +395,57 @@ class LookupController extends Controller
             Auth::flash('error', 'Cannot delete family category. It is being used by students.');
         }
         
-        $this->redirect('/lookups');
+        $this->redirect('/lookups#fcategories');
+    }
+
+    // ==================== GENERIC TOGGLE ====================
+
+    /**
+     * Unified toggle method for all lookup types
+     * Preserves active tab using URL fragment
+     */
+    public function toggle(): void
+    {
+        $this->requireAuth();
+        if (!Auth::isAdmin()) {
+            $this->redirect('/dashboard');
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/lookups');
+        }
+        
+        if (!CSRF::verify($_POST['csrf_token'] ?? null)) {
+            Auth::flash('error', 'Invalid security token.');
+            $this->redirect('/lookups');
+        }
+        
+        $type = $_POST['type'] ?? '';
+        $id = (int)($_POST['id'] ?? 0);
+        
+        if ($id <= 0 || empty($type)) {
+            Auth::flash('error', 'Invalid request parameters.');
+            $this->redirect('/lookups');
+        }
+        
+        try {
+            Lookup::toggle($type, $id);
+            Auth::flash('success', ucfirst($type) . ' status updated.');
+        } catch (Exception $e) {
+            Auth::flash('error', 'Failed to update status.');
+        }
+        
+        // Redirect back to the specific tab
+        // Map type to tab ID (classes, sections, sessions, categories, fcategories)
+        $tabMap = [
+            'class' => 'classes',
+            'section' => 'sections',
+            'session' => 'sessions',
+            'category' => 'categories',
+            'fcategory' => 'fcategories'
+        ];
+        
+        $hash = $tabMap[$type] ?? 'classes';
+        $this->redirect('/lookups#' . $hash);
     }
 }

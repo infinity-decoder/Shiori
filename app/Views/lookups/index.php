@@ -56,6 +56,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Status</th>
                                         <th>Students</th>
                                         <th>Action</th>
                                     </tr>
@@ -64,8 +65,20 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                     <?php foreach ($classes as $class): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($class['name']) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= ($class['is_active'] ?? 1) ? 'success' : 'secondary' ?>"><?= ($class['is_active'] ?? 1) ? 'Active' : 'Inactive' ?></span>
+                                            </td>
                                             <td><span class="badge bg-info"><?= $class['student_count'] ?? 0 ?></span></td>
                                             <td>
+                                                <form method="POST" action="<?= BASE_URL ?>/lookups/toggle" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                                    <input type="hidden" name="type" value="class">
+                                                    <input type="hidden" name="id" value="<?= $class['id'] ?>">
+                                                    <button class="btn btn-sm btn-outline-primary" title="Toggle Status">
+                                                        <?= ($class['is_active'] ?? 1) ? '<i class="bi bi-toggle-on"></i>' : '<i class="bi bi-toggle-off"></i>' ?>
+                                                    </button>
+                                                </form>
+
                                                 <?php if (($class['student_count'] ?? 0) == 0): ?>
                                                     <form method="POST" action="<?= BASE_URL ?>/lookups/classes/delete" class="d-inline" onsubmit="return confirm('Delete this class?');">
                                                         <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
@@ -79,7 +92,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($classes)): ?>
-                                        <tr><td colspan="3" class="text-muted text-center">No classes found</td></tr>
+                                        <tr><td colspan="4" class="text-muted text-center">No classes found</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -116,6 +129,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Status</th>
                                         <th>Students</th>
                                         <th>Action</th>
                                     </tr>
@@ -124,8 +138,20 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                     <?php foreach ($sections as $section): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($section['name']) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= ($section['is_active'] ?? 1) ? 'success' : 'secondary' ?>"><?= ($section['is_active'] ?? 1) ? 'Active' : 'Inactive' ?></span>
+                                            </td>
                                             <td><span class="badge bg-info"><?= $section['student_count'] ?? 0 ?></span></td>
                                             <td>
+                                                <form method="POST" action="<?= BASE_URL ?>/lookups/toggle" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                                    <input type="hidden" name="type" value="section">
+                                                    <input type="hidden" name="id" value="<?= $section['id'] ?>">
+                                                    <button class="btn btn-sm btn-outline-primary" title="Toggle Status">
+                                                        <?= ($section['is_active'] ?? 1) ? '<i class="bi bi-toggle-on"></i>' : '<i class="bi bi-toggle-off"></i>' ?>
+                                                    </button>
+                                                </form>
+
                                                 <?php if (($section['student_count'] ?? 0) == 0): ?>
                                                     <form method="POST" action="<?= BASE_URL ?>/lookups/sections/delete" class="d-inline" onsubmit="return confirm('Delete this section?');">
                                                         <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
@@ -139,7 +165,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($sections)): ?>
-                                        <tr><td colspan="3" class="text-muted text-center">No sections found</td></tr>
+                                        <tr><td colspan="4" class="text-muted text-center">No sections found</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -192,12 +218,19 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <form method="POST" action="<?= BASE_URL ?>/lookups/sessions/toggle" class="d-inline">
+                                                <form method="POST" action="<?= BASE_URL ?>/lookups/toggle" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                                    <input type="hidden" name="type" value="session">
+                                                    <input type="hidden" name="id" value="<?= $session['id'] ?>">
+                                                    <button class="btn btn-sm btn-outline-primary" title="Toggle Status">
+                                                        <?= ($session['is_active'] ?? 1) ? '<i class="bi bi-toggle-on"></i>' : '<i class="bi bi-toggle-off"></i>' ?>
+                                                    </button>
+                                                </form>
+                                                
+                                                <form method="POST" action="<?= BASE_URL ?>/lookups/sessions/delete" class="d-inline" onsubmit="return confirm('Delete this session? This action cannot be undone.');">
                                                     <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
                                                     <input type="hidden" name="id" value="<?= $session['id'] ?>">
-                                                    <button class="btn btn-sm btn-outline-primary">
-                                                        <?= $session['is_active'] ? 'Deactivate' : 'Activate' ?>
-                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" title="Delete Session"><i class="bi bi-trash"></i></button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -240,6 +273,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Status</th>
                                         <th>Students</th>
                                         <th>Action</th>
                                     </tr>
@@ -248,8 +282,20 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                     <?php foreach ($categories as $cat): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($cat['name']) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= ($cat['is_active'] ?? 1) ? 'success' : 'secondary' ?>"><?= ($cat['is_active'] ?? 1) ? 'Active' : 'Inactive' ?></span>
+                                            </td>
                                             <td><span class="badge bg-info"><?= $cat['student_count'] ?? 0 ?></span></td>
                                             <td>
+                                                <form method="POST" action="<?= BASE_URL ?>/lookups/toggle" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                                    <input type="hidden" name="type" value="category">
+                                                    <input type="hidden" name="id" value="<?= $cat['id'] ?>">
+                                                    <button class="btn btn-sm btn-outline-primary" title="Toggle Status">
+                                                        <?= ($cat['is_active'] ?? 1) ? '<i class="bi bi-toggle-on"></i>' : '<i class="bi bi-toggle-off"></i>' ?>
+                                                    </button>
+                                                </form>
+
                                                 <?php if (($cat['student_count'] ?? 0) == 0): ?>
                                                     <form method="POST" action="<?= BASE_URL ?>/lookups/categories/delete" class="d-inline" onsubmit="return confirm('Delete this category?');">
                                                         <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
@@ -263,7 +309,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($categories)): ?>
-                                        <tr><td colspan="3" class="text-muted text-center">No categories found</td></tr>
+                                        <tr><td colspan="4" class="text-muted text-center">No categories found</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -299,6 +345,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Status</th>
                                         <th>Students</th>
                                         <th>Action</th>
                                     </tr>
@@ -307,8 +354,20 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                     <?php foreach ($familyCategories as $fc): ?>
                                         <tr>
                                             <td><?= htmlspecialchars($fc['name']) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= ($fc['is_active'] ?? 1) ? 'success' : 'secondary' ?>"><?= ($fc['is_active'] ?? 1) ? 'Active' : 'Inactive' ?></span>
+                                            </td>
                                             <td><span class="badge bg-info"><?= $fc['student_count'] ?? 0 ?></span></td>
                                             <td>
+                                                <form method="POST" action="<?= BASE_URL ?>/lookups/toggle" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
+                                                    <input type="hidden" name="type" value="fcategory">
+                                                    <input type="hidden" name="id" value="<?= $fc['id'] ?>">
+                                                    <button class="btn btn-sm btn-outline-primary" title="Toggle Status">
+                                                        <?= ($fc['is_active'] ?? 1) ? '<i class="bi bi-toggle-on"></i>' : '<i class="bi bi-toggle-off"></i>' ?>
+                                                    </button>
+                                                </form>
+
                                                 <?php if (($fc['student_count'] ?? 0) == 0): ?>
                                                     <form method="POST" action="<?= BASE_URL ?>/lookups/familycategories/delete" class="d-inline" onsubmit="return confirm('Delete this family category?');">
                                                         <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
@@ -322,7 +381,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($familyCategories)): ?>
-                                        <tr><td colspan="3" class="text-muted text-center">No family categories found</td></tr>
+                                        <tr><td colspan="4" class="text-muted text-center">No family categories found</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
@@ -349,3 +408,28 @@ $title = $title ?? 'Manage Lookups | Shiori';
 
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for hash in URL to active correct tab
+    const hash = window.location.hash;
+    if (hash) {
+        const triggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
+        if (triggerEl) {
+            const tab = new bootstrap.Tab(triggerEl);
+            tab.show();
+        }
+    }
+    
+    // Update hash when tab changes
+    const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabEls.forEach(tabEl => {
+        tabEl.addEventListener('shown.bs.tab', event => {
+            const target = event.target.getAttribute('data-bs-target');
+            if(target) {
+                history.replaceState(null, null, target);
+            }
+        });
+    });
+});
+</script>

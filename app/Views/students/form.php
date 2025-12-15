@@ -7,11 +7,7 @@ $fields = $fields ?? [];
 $action = ($mode === 'create') ? ($baseUrl . '/students') : ($baseUrl . '/students/update?id=' . ((int)$student['id']));
 
 // Generate session options dynamically (3 years back, 3 years forward)
-$nowY = (int)date('Y');
-$sessions = [];
-for ($y = $nowY - 3; $y <= $nowY + 3; $y++) {
-    $sessions[] = sprintf('%04d-%04d', $y, $y + 1);
-}
+// REMOVED: Now using database lookups passed via $lookups['sessions']
 
 // Helper to get value - check old input first, then student data
 $getValue = function($name) use ($student) {
@@ -71,9 +67,31 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                   <?php if ($name === 'session'): ?>
                     <select name="session" class="form-select form-select-lg">
                       <option value="">(select)</option>
-                      <?php foreach ($sessions as $s): ?>
-                        <?php $sessionYear = is_array($s) ? $s['session_year'] : $s; ?>
-                        <option value="<?= $sessionYear; ?>" <?= (isset($student['session']) && $student['session'] === $sessionYear) ? 'selected' : ''; ?>><?= $sessionYear; ?></option>
+                      <?php 
+                      // Use sessions from database lookup
+                      $availableSessions = $lookups['sessions'] ?? [];
+                      
+                      // If editing a student with an inactive/old session, ensure it appears
+                      if (!empty($student['session'])) {
+                          $found = false;
+                          foreach ($availableSessions as $s) {
+                              if ($s['session_year'] === $student['session']) {
+                                  $found = true;
+                                  break;
+                              }
+                          }
+                          // Add current student's session if not in the active list
+                          if (!$found) {
+                              array_unshift($availableSessions, ['session_year' => $student['session'], 'id' => 0]);
+                          }
+                      }
+                      ?>
+                      
+                      <?php foreach ($availableSessions as $s): ?>
+                        <option value="<?= htmlspecialchars($s['session_year']); ?>" 
+                          <?= (isset($student['session']) && $student['session'] === $s['session_year']) ? 'selected' : ''; ?>>
+                          <?= htmlspecialchars($s['session_year']); ?>
+                        </option>
                       <?php endforeach; ?>
                     </select>
 

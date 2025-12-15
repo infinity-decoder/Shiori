@@ -158,11 +158,14 @@ $router->post('/lookups/classes/delete', 'LookupController@deleteClass');
 $router->post('/lookups/sections/store', 'LookupController@storeSection');
 $router->post('/lookups/sections/delete', 'LookupController@deleteSection');
 $router->post('/lookups/sessions/store', 'LookupController@storeSession');
-$router->post('/lookups/sessions/toggle', 'LookupController@toggleSession');
+$router->post('/lookups/sessions/delete', 'LookupController@deleteSession');
 $router->post('/lookups/categories/store', 'LookupController@storeCategory');
 $router->post('/lookups/categories/delete', 'LookupController@deleteCategory');
 $router->post('/lookups/familycategories/store', 'LookupController@storeFamilyCategory');
 $router->post('/lookups/familycategories/delete', 'LookupController@deleteFamilyCategory');
+
+// Shared Toggle Route
+$router->post('/lookups/toggle', 'LookupController@toggle');
 
 // Admin utilities
 $router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)
