@@ -38,6 +38,9 @@ class LookupService
     // Default Section values
     const DEFAULT_SECTIONS = ['A', 'B', 'C', 'D', 'E', 'F'];
     
+    // Default Class values
+    const DEFAULT_CLASSES = ['Play', 'Prep', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+    
     /**
      * Seed default categories, family categories, and sections if they don't exist
      */
@@ -48,6 +51,7 @@ class LookupService
         self::seedFamilyCategories();
         self::seedCategories();
         self::seedSections();
+        self::seedClasses();
     }
     
     /**
@@ -119,6 +123,31 @@ class LookupService
         foreach (self::DEFAULT_SECTIONS as $name) {
             try {
                 Lookup::createSection($name);
+            } catch (Exception $e) {
+                // Skip if already exists
+            }
+        }
+    }
+    
+    /**
+     * Seed default classes
+     */
+    private static function seedClasses(): void
+    {
+        $pdo = DB::get();
+        
+        // Check if any exist
+        $stmt = $pdo->query("SELECT COUNT(*) FROM classes");
+        $count = (int)$stmt->fetchColumn();
+        
+        if ($count > 0) {
+            return; // Already seeded
+        }
+        
+        // Insert defaults (Play, Prep, 1-12)
+        foreach (self::DEFAULT_CLASSES as $name) {
+            try {
+                Lookup::createClass($name);
             } catch (Exception $e) {
                 // Skip if already exists
             }

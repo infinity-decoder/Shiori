@@ -142,6 +142,7 @@ class CSVImportService
     {
         $data = [];
         $errors = [];
+        $warnings = [];
         
         // Map columns to fields
         foreach ($columnMapping as $colIndex => $fieldMeta) {
@@ -168,25 +169,26 @@ class CSVImportService
                 continue; // Skip normal validation
             }
             
-            // Section mapping
+            // Section mapping (LENIENT - warn but don't fail)
             if ($fieldName === 'section_id') {
                 if (!empty($value)) {
                     $sectionId = LookupService::getSectionIdByName($value);
                     if ($sectionId === null) {
-                        // Invalid section name - add warning but don't fail
-                        $errors[] = "Section '{$value}' not found, row will use default";
+                        // Warn but don't fail - data preservation priority
+                        $warnings[] = "Section '{$value}' not found, using default";
                     }
                     $data['section_id'] = $sectionId;
                 }
                 continue; // Skip normal validation
             }
             
-            // Class mapping
+            // Class mapping (LENIENT - warn but don't fail)
             if ($fieldName === 'class_id') {
                 if (!empty($value)) {
                     $classId = LookupService::getClassIdByName($value);
                     if ($classId === null) {
-                        $errors[] = "Class '{$value}' not found";
+                        // Warn but don't fail - data preservation priority
+                        $warnings[] = "Class '{$value}' not found, using default";
                     } else {
                         $data['class_id'] = $classId;
                     }
@@ -209,7 +211,7 @@ class CSVImportService
             }
         }
         
-        // LENIENT VALIDATION: Only check truly mandatory fields
+        // LENIENT VALIDATION: Only check truly mandatory fields for data identity
         $strictlyRequired = ['roll_no', 'enrollment_no', 'student_name', 'father_name'];
         
         foreach ($strictlyRequired as $req) {
@@ -218,15 +220,7 @@ class CSVImportService
             }
         }
         
-        // Check class_id and section_id are resolved
-        if (!isset($data['class_id']) || $data['class_id'] === null) {
-            $errors[] = "Valid Class is required";
-        }
-        if (!isset($data['section_id']) || $data['section_id'] === null) {
-            $errors[] = "Valid Section is required";
-        }
-        
-        // If there are errors, throw exception
+        // If there are CRITICAL errors, throw exception
         if (!empty($errors)) {
             throw new Exception(implode('; ', $errors));
         }
@@ -242,6 +236,14 @@ class CSVImportService
         }
         if (!isset($data['fcategory_id']) || $data['fcategory_id'] === null) {
             $data['fcategory_id'] = 1;
+        }
+        
+        // Class and Section default to 1 if not resolved (DATA PRESERVATION)
+        if (!isset($data['class_id']) || $data['class_id'] === null) {
+            $data['class_id'] = 1;  // Default to first class
+        }
+        if (!isset($data['section_id']) || $data['section_id'] === null) {
+            $data['section_id'] = 1;  // Default to first section
         }
         
         return $data;
