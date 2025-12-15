@@ -200,22 +200,97 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               <div class="card-body text-center">
                 <div class="mb-3">
                   <?php if (!empty($student['photo_path'])): ?>
-                    <img src="<?= $baseUrl; ?>/uploads/students/<?= rawurlencode($student['photo_path']); ?>" alt="photo" style="max-width:100%; border-radius:8px;">
+                    <img id="currentPhoto" src="<?= getStudentImageUrl($student, $baseUrl, 'full') ?>" alt="photo" style="max-width:100%; border-radius:8px;">
                   <?php else: ?>
-                    <div class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:8px;">
+                    <div id="placeholderPhoto" class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:8px;">
                       <i class="bi bi-person fs-1 text-muted"></i>
                     </div>
                   <?php endif; ?>
+                  
+                  <!-- Preview for newly selected photo -->
+                  <div id="photoPreviewContainer" style="display:none; margin-top:15px;">
+                    <img id="photoPreview" style="max-width:100%; border-radius:8px;">
+                    <button type="button" onclick="clearPhoto()" class="btn btn-sm btn-outline-danger mt-2">
+                      <i class="bi bi-x-circle"></i> Remove Photo
+                    </button>
+                  </div>
                 </div>
 
                 <label class="form-label w-100 text-start">Photo (jpg, png, webp)</label>
-                <input id="photoFile" name="photo" type="file" accept="image/*" class="form-control">
+                <input id="photoFile" name="photo" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="form-control">
+                <div id="photoError" class="invalid-feedback d-block"></div>
 
                 <div class="small text-muted mt-2">
-                  Recommended size: square; max 3 MB.
+                  Recommended: Square image, max 3 MB
                 </div>
               </div>
             </div>
+            
+            <script>
+            (function() {
+              const photoInput = document.getElementById('photoFile');
+              const preview = document.getElementById('photoPreview');
+              const previewContainer = document.getElementById('photoPreviewContainer');
+              const errorDiv = document.getElementById('photoError');
+              const currentPhoto = document.getElementById('currentPhoto');
+              const placeholderPhoto = document.getElementById('placeholderPhoto');
+              
+              photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+                
+                if (!file) {
+                  previewContainer.style.display = 'none';
+                  return;
+                }
+                
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                  errorDiv.textContent = '❌ Invalid file type. Only JPG, PNG, and WebP images are allowed.';
+                  errorDiv.style.display = 'block';
+                  photoInput.value = '';
+                  previewContainer.style.display = 'none';
+                  return;
+                }
+                
+                // Validate file size (3MB)
+                const maxSize = 3 * 1024 * 1024; // 3MB in bytes
+                if (file.size > maxSize) {
+                  const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                  errorDiv.textContent = `❌ File too large (${sizeMB}MB). Maximum size is 3MB.`;
+                  errorDiv.style.display = 'block';
+                  photoInput.value = '';
+                  previewContainer.style.display = 'none';
+                  return;
+                }
+                
+                // Hide existing photo/placeholder
+                if (currentPhoto) currentPhoto.style.display = 'none';
+                if (placeholderPhoto) placeholderPhoto.style.display = 'none';
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  preview.src = event.target.result;
+                  previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+              });
+              
+              window.clearPhoto = function() {
+                photoInput.value = '';
+                previewContainer.style.display = 'none';
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+                
+                // Restore original photo/placeholder
+                if (currentPhoto) currentPhoto.style.display = 'block';
+                if (placeholderPhoto) placeholderPhoto.style.display = 'flex';
+              };
+            })();
+            </script>
             <?php endif; ?>
 
             <div class="mt-3 text-center">
