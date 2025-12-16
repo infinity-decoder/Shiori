@@ -68,6 +68,11 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
       white-space: pre-wrap; 
       word-break: break-word; 
     }
+    /* Logout button active override (remove blue) */
+    .dropdown-item.text-danger:active {
+      background-color: #fee2e2;
+      color: #dc3545;
+    }
   </style>
 
   <!-- SweetAlert2 -->
@@ -139,13 +144,50 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
     </div>
 
     <div class="ms-auto d-flex align-items-center">
-      <div class="me-3 text-muted small">Signed in as <strong><?= htmlspecialchars(Auth::user()['username']); ?></strong></div>
-      <form method="POST" action="<?= $baseUrl; ?>/logout" class="mb-0">
-        <?= CSRF::field(); ?>
-        <button class="btn btn-outline-danger btn-sm" type="submit">
-          <i class="bi bi-box-arrow-right me-1"></i> Logout
-        </button>
-      </form>
+      <div class="dropdown">
+        <?php
+            $u = Auth::user();
+            $role = $u['role'] ?? 'viewer';
+            $name = !empty($u['name']) ? $u['name'] : $u['username'];
+            
+            // Define colors
+            $roleColors = [
+                'super_admin' => '#b91c1c', // Dark Red
+                'admin'       => '#15803d', // Green
+                'staff'       => '#1d4ed8', // Blue
+                'viewer'      => '#f7f306ff', // Dark Yellow/Orange (for visibility)
+            ];
+            $color = $roleColors[$role] ?? '#333';
+        ?>
+        <a href="#" class="btn btn-white shadow-sm rounded-pill d-flex align-items-center gap-2 px-3 py-2 text-decoration-none" 
+           id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" 
+           style="transition: all 0.2s; border: 2px solid <?= $color; ?>; color: #333;">
+            <div class="d-flex align-items-center justify-content-center rounded-circle" 
+                 style="width: 24px; height: 24px; color: <?= $color; ?>; background-color: rgba(0,0,0,0.05);">
+                <i class="bi bi-person-fill fs-6"></i>
+            </div>
+            <span class="fw-bold small" style="letter-spacing: 0.3px;">
+                <?= htmlspecialchars($name); ?>
+            </span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="profileDropdown" style="border-radius: 0.8rem; overflow: hidden;">
+            <li><div class="dropdown-header text-muted small text-uppercase">Account</div></li>
+            <li>
+                <a class="dropdown-item py-2" href="<?= $baseUrl; ?>/profile/change-password">
+                    <i class="bi bi-key me-2 text-primary"></i> Change Password
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form method="POST" action="<?= $baseUrl; ?>/logout" class="m-0 p-0">
+                    <?= CSRF::field(); ?>
+                    <button class="dropdown-item py-2 text-danger" type="submit">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+      </div>
     </div>
   </div>
 </nav>

@@ -115,6 +115,10 @@ $router->get('/login', 'AuthController@loginForm');
 $router->post('/login', 'AuthController@login');
 $router->post('/logout', 'AuthController@logout');
 
+// Profile / Password
+$router->get('/profile/change-password', 'AuthController@changePasswordForm');
+$router->post('/profile/change-password', 'AuthController@changePassword');
+
 $router->get('/dashboard', 'DashboardController@index');
 
 // API

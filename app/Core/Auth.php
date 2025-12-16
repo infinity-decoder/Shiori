@@ -7,6 +7,7 @@ class Auth
         $_SESSION['user'] = [
             'id'       => (int)$user['id'],
             'username' => $user['username'],
+            'name'     => $user['name'] ?? '',
             'role'     => $user['role'] ?? 'admin',
         ];
     }
