@@ -7,7 +7,7 @@ class SettingsController extends Controller
     public function index(): void
     {
         $this->requireAuth();
-        if (!Auth::isAdmin()) {
+        if (!Auth::isSuperAdmin()) {
             Auth::flash('error', 'Unauthorized access.');
             $this->redirect('/dashboard');
         }
@@ -30,7 +30,7 @@ class SettingsController extends Controller
     public function storeUser(): void
     {
         $this->requireAuth();
-        if (!Auth::isAdmin()) {
+        if (!Auth::isSuperAdmin()) {
             $this->redirect('/dashboard');
         }
 
@@ -67,7 +67,7 @@ class SettingsController extends Controller
     public function deleteUser(): void
     {
         $this->requireAuth();
-        if (!Auth::isAdmin()) {
+        if (!Auth::isSuperAdmin()) {
             $this->redirect('/dashboard');
         }
 

@@ -100,7 +100,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
         <li class="nav-item">
           <a class="nav-link" href="<?= $baseUrl; ?>/students">Students</a>
         </li>
-        <?php if (Auth::user()['role'] === 'admin'): ?>
+        <?php if (Auth::isAdmin()): ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Admin
@@ -109,6 +109,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/lookups">
                 <i class="bi bi-gear me-2"></i>Manage Lookups
               </a></li>
+              <?php if (Auth::isSuperAdmin()): ?>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">
                 <i class="bi bi-sliders me-2"></i>Settings & Fields
               </a></li>
@@ -124,6 +125,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
                   </button>
                 </form>
               </li>
+              <?php endif; ?>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/activity">
                 <i class="bi bi-clock-history me-2"></i>Activity Log
               </a></li>

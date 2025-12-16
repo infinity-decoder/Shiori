@@ -54,9 +54,15 @@ class Auth
         return $user && ($user['role'] === $role);
     }
 
+    public static function isSuperAdmin(): bool
+    {
+        return self::hasRole('super_admin');
+    }
+
     public static function isAdmin(): bool
     {
-        return self::hasRole('admin');
+        // Admin includes Super Admin (Hierarchy)
+        return self::hasRole('admin') || self::hasRole('super_admin');
     }
 
     public static function isStaff(): bool
