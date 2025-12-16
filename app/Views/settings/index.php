@@ -12,9 +12,6 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="fields-tab" data-bs-toggle="tab" data-bs-target="#fields" type="button" role="tab">Dynamic Fields</button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">User Management</button>
-        </li>
     </ul>
 
     <div class="tab-content" id="settingsTabContent">
@@ -106,92 +103,9 @@
             </div>
         </div>
 
-        <!-- Users Tab -->
-        <div class="tab-pane fade" id="users" role="tabpanel">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card mb-4">
-                        <div class="card-header">Users</div>
-                        <div class="card-body p-0">
-                            <table class="table table-striped mb-0">
-                                <thead>
-                                    <tr>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Username</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Created</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($users as $u): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($u['name'] ?? '') ?></td>
-                                        <td><?= htmlspecialchars($u['username']) ?></td>
-                                        <td><?= htmlspecialchars($u['email'] ?? '') ?></td>
-                                        <td>
-                                            <span class="badge bg-<?= $u['role'] === 'admin' ? 'danger' : ($u['role'] === 'staff' ? 'primary' : 'secondary') ?>">
-                                                <?= htmlspecialchars(ucfirst($u['role'])) ?>
-                                            </span>
-                                        </td>
-                                        <td><?= $u['created_at'] ?></td>
-                                        <td>
-                                            <?php if ($u['id'] != Auth::user()['id']): ?>
-                                            <form method="POST" action="<?= BASE_URL ?>/settings/users/delete" class="d-inline" onsubmit="return confirm('Delete user?');">
-                                                <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                                                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
-                                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                            </form>
-                                            <?php else: ?>
-                                                <span class="text-muted small">(You)</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">Add User</div>
-                        <div class="card-body">
-                            <form method="POST" action="<?= BASE_URL ?>/settings/users/store">
-                                <input type="hidden" name="csrf_token" value="<?= CSRF::token() ?>">
-                                <div class="mb-3">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" name="name" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" name="email" class="form-control">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" name="username" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" name="password" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Role</label>
-                                    <select name="role" class="form-select">
-                                        <option value="viewer">Viewer</option>
-                                        <option value="staff">Staff</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </div>
-                                <button class="btn btn-primary w-100">Create User</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+    </div>
+</div>
 
     </div>
 </div>

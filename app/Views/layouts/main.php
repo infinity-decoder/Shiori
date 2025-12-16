@@ -110,6 +110,9 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
                 <i class="bi bi-gear me-2"></i>Manage Lookups
               </a></li>
               <?php if (Auth::isSuperAdmin()): ?>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/users">
+                <i class="bi bi-people me-2"></i>Manage Users
+              </a></li>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">
                 <i class="bi bi-sliders me-2"></i>Settings & Fields
               </a></li>

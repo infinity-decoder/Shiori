@@ -93,6 +93,7 @@ require_once BASE_PATH . '/app/Controllers/ActivityController.php';
 require_once BASE_PATH . '/app/Controllers/AdminController.php';
 require_once BASE_PATH . '/app/Controllers/FieldController.php';
 require_once BASE_PATH . '/app/Controllers/SettingsController.php';
+require_once BASE_PATH . '/app/Controllers/UserController.php';
 require_once BASE_PATH . '/app/Controllers/LookupController.php';
 
 require_once BASE_PATH . '/app/Models/Field.php';
@@ -137,10 +138,16 @@ $router->post('/students/import-url', 'StudentController@importFromUrl'); // URL
 $router->get('/students/thumbnail', 'StudentController@thumbnail'); // ?id=#
 $router->get('/students/print', 'StudentController@print');    // print-friendly view ?id=#
 
-// Settings & Users
+// User Management (Super Admin)
+$router->get('/users', 'UserController@index');
+$router->get('/users/create', 'UserController@create');
+$router->post('/users/store', 'UserController@store');
+$router->get('/users/edit', 'UserController@edit');     // ?id=#
+$router->post('/users/update', 'UserController@update');
+$router->post('/users/delete', 'UserController@delete');
+
+// Settings
 $router->get('/settings', 'SettingsController@index');
-$router->post('/settings/users/store', 'SettingsController@storeUser');
-$router->post('/settings/users/delete', 'SettingsController@deleteUser');
 
 // Activity Log
 $router->get('/activity', 'ActivityController@index');

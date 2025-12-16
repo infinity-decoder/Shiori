@@ -34,6 +34,11 @@ class AuthController extends Controller
             $this->redirect('/login');
         }
 
+        if (isset($user['is_active']) && (int)$user['is_active'] !== 1) {
+            Auth::flash('error', 'Your account is deactivated. Please contact administrator.');
+            $this->redirect('/login');
+        }
+
         // Success: login + last_login update
         Auth::login($user);
         User::updateLastLogin((int)$user['id']);
