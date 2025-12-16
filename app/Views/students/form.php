@@ -291,100 +291,187 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               $photoField = array_filter($fields, fn($f) => $f['name'] === 'photo_path');
               if (!empty($photoField)): 
             ?>
+            <!-- Cropper CSS -->
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+            
             <div class="card border-0 shadow-sm">
-              <div class="card-body text-center">
-                <div class="mb-3">
+              <div class="card-body text-center p-3">
+                
+                <!-- Fixed Dimension Container for Placeholder/Image -->
+                <div class="mb-3 mx-auto position-relative" style="width: 200px; height: 200px; overflow: hidden; border-radius: 8px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                  
                   <?php if (!empty($student['photo_path'])): ?>
-                    <img id="currentPhoto" src="<?= getStudentImageUrl($student, $baseUrl, 'full') ?>" alt="photo" style="max-width:100%; border-radius:8px;">
+                    <img id="currentPhoto" src="<?= getStudentImageUrl($student, $baseUrl, 'full') ?>" alt="photo" 
+                         style="width: 100%; height: 100%; object-fit: cover;">
                   <?php else: ?>
-                    <div id="placeholderPhoto" class="bg-light d-flex align-items-center justify-content-center" style="height:220px; border-radius:8px;">
-                      <i class="bi bi-person fs-1 text-muted"></i>
+                    <div id="placeholderPhoto" class="d-flex align-items-center justify-content-center w-100 h-100">
+                      <i class="bi bi-person fs-1 text-muted" style="font-size: 4rem !important;"></i>
                     </div>
                   <?php endif; ?>
                   
-                  <!-- Preview for newly selected photo -->
-                  <div id="photoPreviewContainer" style="display:none; margin-top:15px;">
-                    <img id="photoPreview" style="max-width:100%; border-radius:8px;">
-                    <button type="button" onclick="clearPhoto()" class="btn btn-sm btn-outline-danger mt-2">
-                      <i class="bi bi-x-circle"></i> Remove Photo
-                    </button>
-                  </div>
+                  <img id="finalPreview" style="display:none; width: 100%; height: 100%; object-fit: cover;">
                 </div>
 
-                <label class="form-label w-100 text-start">Photo (jpg, png, webp)</label>
-                <input id="photoFile" name="photo" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" class="form-control">
-                <div id="photoError" class="invalid-feedback d-block"></div>
+                <div class="d-grid gap-2 mb-2">
+                  <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('photoInput').click()">
+                    <i class="bi bi-camera"></i> Select Photo
+                  </button>
+                  <button type="button" id="removePhotoBtn" class="btn btn-outline-danger" onclick="removePhoto()" style="display: none;">
+                    <i class="bi bi-trash"></i> Remove
+                  </button>
+                </div>
+
+                <!-- Hidden Input for File Selection -->
+                <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                <!-- Actual Input for Form Submission -->
+                <input type="hidden" name="cropped_image" id="croppedImageBase64">
+                <!-- Keep original file input name for fallback validation if needed, though we primarily use the base64 now -->
+                
+                <div id="photoError" class="invalid-feedback d-block text-center"></div>
 
                 <div class="small text-muted mt-2">
-                  Recommended: Square image, max 3 MB
+                  <i class="bi bi-info-circle"></i> Allowed: JPG, PNG, WebP. Max 3MB.
+                </div>
+              </div>
+            </div>
+
+            <!-- Cropping Modal -->
+            <div class="modal fade" id="cropModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Crop Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-0" style="height: 500px; background: #333;">
+                    <div class="h-100 d-flex align-items-center justify-content-center">
+                        <img id="imageToCrop" style="max-width: 100%; max-height: 100%; display: block;">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="cropBtn">Crop & Save</button>
+                  </div>
                 </div>
               </div>
             </div>
             
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
             <script>
             document.addEventListener('DOMContentLoaded', function() {
-              const photoInput = document.getElementById('photoFile');
-              const preview = document.getElementById('photoPreview');
-              const previewContainer = document.getElementById('photoPreviewContainer');
-              const errorDiv = document.getElementById('photoError');
+              const photoInput = document.getElementById('photoInput');
+              const imageToCrop = document.getElementById('imageToCrop');
+              const cropBtn = document.getElementById('cropBtn');
+              const finalPreview = document.getElementById('finalPreview');
               const currentPhoto = document.getElementById('currentPhoto');
               const placeholderPhoto = document.getElementById('placeholderPhoto');
+              const croppedImageInput = document.getElementById('croppedImageBase64');
+              const removeBtn = document.getElementById('removePhotoBtn');
+              const errorDiv = document.getElementById('photoError');
               
-              if (!photoInput) return;
+              let cropper;
+              let cropModal;
+
+              // Initialize bootstrap modal if available
+              if (typeof bootstrap !== 'undefined') {
+                  cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+              }
+
+              // Show remove button if image exists
+              if (currentPhoto && currentPhoto.getAttribute('src')) {
+                  removeBtn.style.display = 'block';
+              }
 
               photoInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
-                
-                // Reset errors
-                errorDiv.textContent = '';
-                errorDiv.style.display = 'none';
-                
                 if (!file) return;
-                
-                console.log('Photo selected:', file.name, file.type, file.size);
-                
-                // Validate file type
-                // Note: file.type might be empty on some systems, but usually present for images
+
+                // Validate
                 const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-                if (file.type && !validTypes.includes(file.type)) {
-                  errorDiv.textContent = '❌ Invalid file type. Only JPG, PNG, and WebP allowed.';
-                  errorDiv.style.display = 'block';
-                  photoInput.value = '';
-                  return;
-                }
-                
-                // Validate size (3MB)
-                if (file.size > 3 * 1024 * 1024) {
-                   const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                   errorDiv.textContent = `❌ File too large (${sizeMB}MB). Max 3MB.`;
-                   errorDiv.style.display = 'block';
-                   photoInput.value = '';
+                if (!validTypes.includes(file.type)) {
+                   showError('❌ Invalid file type. Use JPG, PNG, or WebP.');
                    return;
                 }
+                if (file.size > 3 * 1024 * 1024) {
+                   showError('❌ File too large. Max 3MB.');
+                   return;
+                }
+                clearError();
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                  imageToCrop.src = event.target.result;
+                  if (cropModal) cropModal.show();
+                  
+                  // Initialize Cropper inside modal
+                  if (cropper) cropper.destroy();
+                  cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1, // Square
+                    viewMode: 1,
+                    autoCropArea: 0.9,
+                    responsive: true,
+                  });
+                };
+                reader.readAsDataURL(file);
                 
-                // Hide current display
+                // Clear input to allow re-selecting same file
+                this.value = '';
+              });
+
+              cropBtn.addEventListener('click', function() {
+                if (!cropper) return;
+
+                // Get cropped canvas
+                const canvas = cropper.getCroppedCanvas({
+                  width: 300,
+                  height: 300,
+                  fillColor: '#fff',
+                  imageSmoothingEnabled: true,
+                  imageSmoothingQuality: 'high',
+                });
+
+                // Convert to base64
+                const base64 = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Update interface
+                finalPreview.src = base64;
+                finalPreview.style.display = 'block';
                 if (currentPhoto) currentPhoto.style.display = 'none';
                 if (placeholderPhoto) placeholderPhoto.style.display = 'none';
                 
-                // Show preview
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                  preview.src = event.target.result;
-                  previewContainer.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+                // Set hidden input
+                croppedImageInput.value = base64;
+                removeBtn.style.display = 'block';
+
+                if (cropModal) cropModal.hide();
               });
-              
-              // Expose clear function globally for the button
-              window.clearPhoto = function() {
-                photoInput.value = '';
-                previewContainer.style.display = 'none';
-                errorDiv.style.display = 'none';
-                
-                // Restore original state (remove inline display:none to let CSS/Classes take over)
-                if (currentPhoto) currentPhoto.style.display = '';
-                if (placeholderPhoto) placeholderPhoto.style.display = '';
+
+              window.removePhoto = function() {
+                 finalPreview.src = '';
+                 finalPreview.style.display = 'none';
+                 croppedImageInput.value = 'remove'; // Signal to backend
+                 
+                 if (currentPhoto) currentPhoto.style.display = 'none'; // Hide original too
+                 if (placeholderPhoto) placeholderPhoto.style.display = 'flex';
+                 
+                 removeBtn.style.display = 'none';
               };
+
+              function showError(msg) {
+                errorDiv.textContent = msg;
+                errorDiv.style.display = 'block';
+              }
+              function clearError() {
+                 errorDiv.style.display = 'none';
+              }
+              
+              // Clean up cropper when modal closes
+              document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
+                 if (cropper) {
+                     cropper.destroy();
+                     cropper = null;
+                 }
+              });
             });
             </script>
             <?php endif; ?>
@@ -412,21 +499,6 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
       yearRange: [1900, (new Date()).getFullYear()],
     });
   }
-
-  // FilePond initialization
-  (function () {
-    if (typeof FilePond === 'undefined') return;
-    const inputElement = document.getElementById('photoFile');
-    if (inputElement) {
-        const pond = FilePond.create(inputElement, {
-          allowMultiple: false,
-          maxFiles: 1,
-          maxFileSize: '3MB',
-          acceptedFileTypes: ['image/jpeg', 'image/png', 'image/webp'],
-          labelIdle: 'Drag & Drop your photo or <span class="filepond--label-action">Browse</span>',
-        });
-    }
-  })();
 
   // Real-time validation for B-Form and CNIC fields (13 digits, numeric only)
   (function () {

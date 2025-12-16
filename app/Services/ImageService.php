@@ -275,4 +275,66 @@ class ImageService
         echo $data;
         exit;
     }
+    /**
+     * Save student photo from Base64 string (Cropped)
+     */
+    public static function saveFromBase64(string $base64, int $studentId): array
+    {
+        // 1. Decode
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64, $type)) {
+            $data = substr($base64, strpos($base64, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, etc.
+            
+            if (!in_array($type, ['jpg', 'jpeg', 'png', 'webp'])) {
+                return ['ok' => false, 'error' => 'Invalid image type from cropper.'];
+            }
+            $data = base64_decode($data);
+            if ($data === false) {
+                return ['ok' => false, 'error' => 'Base64 decode failed.'];
+            }
+        } else {
+             return ['ok' => false, 'error' => 'Invalid base64 data.'];
+        }
+        
+        $mime = 'image/' . ($type === 'jpg' ? 'jpeg' : $type);
+        $ext = ($type === 'jpeg' || $type === 'jpg') ? 'jpg' : $type;
+        
+        // 2. Prep Directory
+        $uploadsDir = BASE_PATH . '/public/uploads/students';
+        if (!is_dir($uploadsDir)) {
+            if (!mkdir($uploadsDir, 0755, true) && !is_dir($uploadsDir)) {
+                return ['ok' => false, 'error' => 'Unable to create uploads directory.'];
+            }
+        }
+
+        // 3. Save Filesystem
+        $filename = $studentId . '.' . $ext;
+        $dest = $uploadsDir . DIRECTORY_SEPARATOR . $filename;
+        
+        if (file_put_contents($dest, $data) === false) {
+            return ['ok' => false, 'error' => 'Failed to write image file.'];
+        }
+        @chmod($dest, 0644);
+
+        // 4. Generate Thumbnail
+        $thumbData = null;
+        $resized = self::createThumbnail($dest, 300, 300);
+        if ($resized['ok']) {
+            $thumbData = $resized['data'];
+            $thumbPath = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . $studentId . '.jpg';
+            @file_put_contents($thumbPath, $thumbData);
+        }
+
+        // 5. Metadata
+        $hash = hash('sha256', $data);
+
+        return [
+            'ok' => true,
+            'filename' => $filename,
+            'photo_blob' => $data,
+            'photo_mime' => $mime,
+            'photo_hash' => $hash,
+            'thumbnail_blob' => $thumbData
+        ];
+    }
 }

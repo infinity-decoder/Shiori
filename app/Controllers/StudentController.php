@@ -129,7 +129,21 @@ class StudentController extends Controller
             
             $id = Student::create($fullData);
 
-            if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+            // Handle Photo (Priority: Cropped > File Upload)
+            if (!empty($_POST['cropped_image']) && strpos($_POST['cropped_image'], 'data:image') === 0) {
+                 $saved = ImageService::saveFromBase64($_POST['cropped_image'], $id);
+                 if ($saved['ok']) {
+                    Student::update($id, [
+                        'photo_path' => $saved['filename'],
+                        'photo_blob' => $saved['photo_blob'] ?? null,
+                        'photo_mime' => $saved['photo_mime'] ?? null,
+                        'photo_hash' => $saved['photo_hash'] ?? null,
+                        'thumbnail_blob' => $saved['thumbnail_blob'] ?? null
+                    ]);
+                 } else {
+                    Auth::flash('error', 'Saved student but photo save failed: ' . $saved['error']);
+                 }
+            } elseif (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
                 if ($saved['ok']) {
                     $updateData = [
@@ -142,7 +156,7 @@ class StudentController extends Controller
                     Student::update($id, $updateData);
                 } else {
                     Auth::flash('error', 'Saved student but photo upload failed: ' . $saved['error']);
-                    $this->redirect('/students');
+                    // We don't redirect here, just flash error and continue to list
                 }
             }
 
@@ -261,7 +275,38 @@ class StudentController extends Controller
         try {
             Student::update($id, $fullData);
 
-            if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+            // Handle Photo Update (Remove OR Update)
+            if (isset($_POST['cropped_image']) && $_POST['cropped_image'] === 'remove') {
+                // Remove photo
+                if (!empty($student['photo_path'])) {
+                    ImageService::deleteStudentPhoto($student['photo_path']);
+                }
+                Student::update($id, [
+                    'photo_path' => null,
+                    'photo_blob' => null,
+                    'photo_mime' => null,
+                    'photo_hash' => null,
+                    'thumbnail_blob' => null
+                ]);
+            } elseif (!empty($_POST['cropped_image']) && strpos($_POST['cropped_image'], 'data:image') === 0) {
+                 // Update with new cropped image
+                 if (!empty($student['photo_path'])) {
+                    ImageService::deleteStudentPhoto($student['photo_path']);
+                 }
+                 $saved = ImageService::saveFromBase64($_POST['cropped_image'], $id);
+                 if ($saved['ok']) {
+                    Student::update($id, [
+                        'photo_path' => $saved['filename'],
+                        'photo_blob' => $saved['photo_blob'] ?? null,
+                        'photo_mime' => $saved['photo_mime'] ?? null,
+                        'photo_hash' => $saved['photo_hash'] ?? null,
+                        'thumbnail_blob' => $saved['thumbnail_blob'] ?? null
+                    ]);
+                 } else {
+                    Auth::flash('error', 'Student updated but photo save failed: ' . $saved['error']);
+                 }
+            } elseif (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
+                // Fallback to standard upload
                 if (!empty($student['photo_path'])) {
                     ImageService::deleteStudentPhoto($student['photo_path']);
                 }
