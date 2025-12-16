@@ -121,7 +121,7 @@ class Student
 
         $sql = "
             SELECT s.id, s.roll_no, s.enrollment_no, s.session, s.student_name, s.class_id, s.section_id,
-                   s.father_name, s.mobile,
+                   s.father_name, s.mobile, s.b_form,
                    c.name AS class_name, sec.name AS section_name, s.photo_path
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id

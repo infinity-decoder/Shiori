@@ -303,13 +303,16 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                   <?php if (!empty($student['photo_path'])): ?>
                     <img id="currentPhoto" src="<?= getStudentImageUrl($student, $baseUrl, 'full') ?>" alt="photo" 
                          style="width: 100%; height: 100%; object-fit: cover;">
-                  <?php else: ?>
-                    <div id="placeholderPhoto" class="d-flex align-items-center justify-content-center w-100 h-100">
-                      <i class="bi bi-person fs-1 text-muted" style="font-size: 4rem !important;"></i>
-                    </div>
                   <?php endif; ?>
+
+                  <!-- Placeholder is shown if no current photo exists OR if we are in 'remove' state -->
+                  <div id="placeholderPhoto" class="d-flex align-items-center justify-content-center w-100 h-100" 
+                       style="<?= !empty($student['photo_path']) ? 'display:none;' : '' ?>">
+                    <i class="bi bi-person fs-1 text-muted" style="font-size: 4rem !important;"></i>
+                  </div>
                   
-                  <img id="finalPreview" style="display:none; width: 100%; height: 100%; object-fit: cover;">
+                  <!-- This will show the cropped result immediately -->
+                  <img id="finalPreview" style="display:none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 10;">
                 </div>
 
                 <div class="d-grid gap-2 mb-2">
@@ -325,9 +328,8 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                 <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" style="display: none;">
                 <!-- Actual Input for Form Submission -->
                 <input type="hidden" name="cropped_image" id="croppedImageBase64">
-                <!-- Keep original file input name for fallback validation if needed, though we primarily use the base64 now -->
                 
-                <div id="photoError" class="invalid-feedback d-block text-center"></div>
+                <div id="photoError" class="invalid-feedback d-block text-center mt-2"></div>
 
                 <div class="small text-muted mt-2">
                   <i class="bi bi-info-circle"></i> Allowed: JPG, PNG, WebP. Max 3MB.
@@ -335,22 +337,28 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               </div>
             </div>
 
-            <!-- Cropping Modal -->
+            <!-- Cropping Modal (Large) -->
             <div class="modal fade" id="cropModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
-              <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- changed to modal-xl -->
                 <div class="modal-content">
                   <div class="modal-header">
                     <h5 class="modal-title">Crop Image</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
-                  <div class="modal-body p-0" style="height: 500px; background: #333;">
-                    <div class="h-100 d-flex align-items-center justify-content-center">
-                        <img id="imageToCrop" style="max-width: 100%; max-height: 100%; display: block;">
+                  <div class="modal-body p-0" style="height: 70vh; background: #333; position: relative;">
+                    <!-- Image container must be full size -->
+                    <div style="width: 100%; height: 100%;">
+                        <img id="imageToCrop" style="max-width: 100%; display: block;">
                     </div>
                   </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="cropBtn">Crop & Save</button>
+                  <div class="modal-footer justify-content-between">
+                    <div class="text-muted small">
+                         Mouse wheel to zoom. Drag to move.
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary px-4" id="cropBtn"><i class="bi bi-check-lg"></i> Crop & Update Preview</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -372,14 +380,15 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               let cropper;
               let cropModal;
 
-              // Initialize bootstrap modal if available
+              // Initialize bootstrap modal
               if (typeof bootstrap !== 'undefined') {
                   cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
               }
 
-              // Show remove button if image exists
+              // Show remove button and hide placeholder if image exists on load
               if (currentPhoto && currentPhoto.getAttribute('src')) {
                   removeBtn.style.display = 'block';
+                  if(placeholderPhoto) placeholderPhoto.style.display = 'none';
               }
 
               photoInput.addEventListener('change', function(e) {
@@ -400,35 +409,52 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
 
                 const reader = new FileReader();
                 reader.onload = function(event) {
+                  // Reset image source
                   imageToCrop.src = event.target.result;
-                  if (cropModal) cropModal.show();
                   
-                  // Initialize Cropper inside modal
-                  if (cropper) cropper.destroy();
-                  cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1, // Square
-                    viewMode: 1,
-                    autoCropArea: 0.9,
-                    responsive: true,
-                  });
+                  if (cropModal) {
+                      cropModal.show();
+                      // We must wait for modal to be visible before initializing cropper for correct math
+                      document.getElementById('cropModal').addEventListener('shown.bs.modal', initCropperOnce, { once: true });
+                  }
                 };
                 reader.readAsDataURL(file);
                 
-                // Clear input to allow re-selecting same file
                 this.value = '';
               });
+
+              function initCropperOnce() {
+                  if (cropper) cropper.destroy();
+                  cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1, // Square
+                    viewMode: 1,    // Restrict crop box to canvas
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    toggleDragModeOnDblclick: false,
+                  });
+              }
 
               cropBtn.addEventListener('click', function() {
                 if (!cropper) return;
 
                 // Get cropped canvas
                 const canvas = cropper.getCroppedCanvas({
-                  width: 300,
-                  height: 300,
+                  width: 400, // Reasonable size for profile
+                  height: 400,
                   fillColor: '#fff',
                   imageSmoothingEnabled: true,
                   imageSmoothingQuality: 'high',
                 });
+
+                if (!canvas) {
+                    console.error('Could not get cropped canvas');
+                    return;
+                }
 
                 // Convert to base64
                 const base64 = canvas.toDataURL('image/jpeg', 0.9);
@@ -436,9 +462,14 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                 // Update interface
                 finalPreview.src = base64;
                 finalPreview.style.display = 'block';
+                
+                // Hide others
                 if (currentPhoto) currentPhoto.style.display = 'none';
                 if (placeholderPhoto) placeholderPhoto.style.display = 'none';
                 
+                // FORCE visibility via z-index just in case
+                finalPreview.style.zIndex = '100';
+
                 // Set hidden input
                 croppedImageInput.value = base64;
                 removeBtn.style.display = 'block';
@@ -449,10 +480,15 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               window.removePhoto = function() {
                  finalPreview.src = '';
                  finalPreview.style.display = 'none';
-                 croppedImageInput.value = 'remove'; // Signal to backend
+                 croppedImageInput.value = 'remove'; 
                  
-                 if (currentPhoto) currentPhoto.style.display = 'none'; // Hide original too
-                 if (placeholderPhoto) placeholderPhoto.style.display = 'flex';
+                 if (currentPhoto) currentPhoto.style.display = 'none'; 
+                 // Show placeholder
+                 if (placeholderPhoto) {
+                     placeholderPhoto.style.display = 'flex'; // Use flex to center icon
+                     placeholderPhoto.style.removeProperty('display'); // Or revert to stylesheet
+                     placeholderPhoto.className = 'd-flex align-items-center justify-content-center w-100 h-100'; // re-apply boostrap classes just in case
+                 }
                  
                  removeBtn.style.display = 'none';
               };
@@ -471,6 +507,8 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
                      cropper.destroy();
                      cropper = null;
                  }
+                 // Reset file input logic just in case
+                 photoInput.value = ''; 
               });
             });
             </script>

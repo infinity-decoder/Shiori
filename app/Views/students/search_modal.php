@@ -28,12 +28,12 @@ $csrfToken = CSRF::token();
             <table class="table table-hover" id="searchResultsTable">
               <thead class="table-light">
                 <tr>
-                  <th style="width:70px">ID</th>
+                  <th style="width:60px">Photo</th>
                   <th>Name</th>
                   <th>Father</th>
                   <th>Roll</th>
                   <th>Enrollment</th>
-                  <th>CNIC</th>
+                  <th>B.Form</th>
                   <th>Mobile</th>
                   <th>Class</th>
                   <th>Section</th>
@@ -87,6 +87,12 @@ $csrfToken = CSRF::token();
   function td(text) {
     const cell = document.createElement('td');
     cell.textContent = text ?? '';
+    return cell;
+  }
+  
+  function tdHtml(html) {
+    const cell = document.createElement('td');
+    cell.innerHTML = html ?? '';
     return cell;
   }
 
@@ -153,12 +159,15 @@ $csrfToken = CSRF::token();
     tbody.innerHTML = '';
     for (const item of items) {
       const tr = document.createElement('tr');
-      tr.appendChild(td(item.id));
+      // Render photo instead of ID
+      const photoHtml = `<img src="${item.photo_url}" alt="photo" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">`;
+      tr.appendChild(tdHtml(photoHtml));
+      
       tr.appendChild(td(item.student_name));
       tr.appendChild(td(item.father_name));
       tr.appendChild(td(item.roll_no));
       tr.appendChild(td(item.enrollment_no));
-      tr.appendChild(td(item.cnic));
+      tr.appendChild(td(item.b_form)); // Changed from CNIC to B.Form
       tr.appendChild(td(item.mobile));
       tr.appendChild(td(item.class_name));
       tr.appendChild(td(item.section_name));

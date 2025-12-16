@@ -85,6 +85,7 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
               <th>Enrollment</th>
               <th>Name</th>
               <th>Father Name</th>
+              <th>B.Form</th>
               <th>Mobile Number</th>
               <th>Class</th>
               <th>Section</th>
@@ -108,6 +109,7 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
               <td><?= htmlspecialchars($s['enrollment_no']); ?></td>
               <td><?= htmlspecialchars($s['student_name']); ?></td>
               <td><?= htmlspecialchars($s['father_name'] ?? ''); ?></td>
+              <td><?= htmlspecialchars($s['b_form'] ?? ''); ?></td>
               <td><?= htmlspecialchars($s['mobile'] ?? ''); ?></td>
               <td><?= htmlspecialchars($s['class_name'] ?? $s['class_id']); ?></td>
               <td><?= htmlspecialchars($s['section_name'] ?? $s['section_id']); ?></td>

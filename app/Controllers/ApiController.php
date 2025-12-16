@@ -113,7 +113,7 @@ class ApiController extends Controller
                 // Select with basic relevance scoring (higher value for exact id / exact fields)
                 $selectSql = "
                     SELECT s.id, s.roll_no, s.enrollment_no, s.student_name, s.father_name,
-                           s.cnic, s.mobile, s.photo_path, c.name AS class_name, sec.name AS section_name,
+                           s.cnic, s.b_form, s.mobile, s.photo_path, c.name AS class_name, sec.name AS section_name,
                            ((s.id = :idExact) * 100
                              + (s.roll_no = :exact) * 90
                              + (s.enrollment_no = :exact) * 90
@@ -177,7 +177,7 @@ class ApiController extends Controller
                         // Select with relevance
                         $selectSql = "
                             SELECT s.id, s.roll_no, s.enrollment_no, s.student_name, s.father_name,
-                                   s.cnic, s.mobile, s.photo_path, c.name AS class_name, sec.name AS section_name,
+                                   s.cnic, s.b_form, s.mobile, s.photo_path, c.name AS class_name, sec.name AS section_name,
                                    MATCH(s.student_name, s.father_name) AGAINST(:fts IN BOOLEAN MODE) AS score
                             FROM students s
                             LEFT JOIN classes c ON s.class_id = c.id
@@ -210,7 +210,7 @@ class ApiController extends Controller
 
                     $selectSql = "
                         SELECT s.id, s.roll_no, s.enrollment_no, s.student_name, s.father_name,
-                               s.cnic, s.mobile, s.photo_path, c.name AS class_name, sec.name AS section_name,
+                               s.cnic, s.b_form, s.mobile, s.photo_path, c.name AS class_name, sec.name AS section_name,
                                ((s.student_name LIKE :prefix)*50 + (s.student_name LIKE :like)*30 + (s.father_name LIKE :prefix)*40 + (s.father_name LIKE :like)*20) AS relevance
                         FROM students s
                         LEFT JOIN classes c ON s.class_id = c.id
@@ -245,10 +245,12 @@ class ApiController extends Controller
                     'roll_no'       => $r['roll_no'] ?? '',
                     'enrollment_no' => $r['enrollment_no'] ?? '',
                     'cnic'          => $r['cnic'] ?? '',
+                    'b_form'        => $r['b_form'] ?? '',
                     'mobile'        => $r['mobile'] ?? '',
                     'class_name'    => $r['class_name'] ?? '',
                     'section_name'  => $r['section_name'] ?? '',
                     'photo_path'    => $r['photo_path'] ?? null,
+                    'photo_url'     => $baseUrl . '/students/photo?id=' . $id,
                     'view_url'      => $baseUrl . '/students/show?id=' . $id,
                     'edit_url'      => $baseUrl . '/students/edit?id=' . $id,
                     'delete_url'    => $baseUrl . '/students/delete?id=' . $id,
