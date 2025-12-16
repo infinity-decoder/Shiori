@@ -25,12 +25,49 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
   <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet">
 
   <style>
-    :root { --card-radius: 1rem; }
-    body.bg-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); min-height:100vh; color:#111827; }
-    .auth-card { backdrop-filter: blur(6px); background: rgba(255,255,255,0.95); border-radius: var(--card-radius); }
-    .card-soft { border-radius: var(--card-radius); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
-    .stat-number { font-size: 1.6rem; font-weight: 700; }
-    pre { white-space: pre-wrap; word-break: break-word; }
+    :root { 
+      --card-radius: 1rem; 
+      --primary-gradient: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    }
+    body.bg-gradient { 
+      background: var(--primary-gradient); 
+      min-height:100vh; 
+      color:#111827; 
+    }
+    .auth-card { 
+      backdrop-filter: blur(6px); 
+      background: rgba(255,255,255,0.95); 
+      border-radius: var(--card-radius); 
+    }
+    .card-soft { 
+      border-radius: var(--card-radius); 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06); 
+      transition: all 0.3s ease;
+    }
+    .card-soft:hover {
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .stat-number { 
+      font-size: 1.8rem; 
+      font-weight: 700; 
+    }
+    .navbar-brand { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .navbar-brand img {
+      height: 36px;
+      width: 36px;
+      object-fit: contain;
+    }
+    pre { 
+      white-space: pre-wrap; 
+      word-break: break-word; 
+    }
   </style>
 
   <!-- SweetAlert2 -->
@@ -49,11 +86,11 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 <body class="<?= Auth::check() ? '' : 'bg-gradient'; ?>">
 
 <?php if (Auth::check()): ?>
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
   <div class="container">
     <a class="navbar-brand" href="<?= $baseUrl; ?>/dashboard">
-      <span style="font-size:1.5em; font-weight:bold; color:#667eea;">∞</span>
-      <span class="ms-1"><?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></span>
+      <i class="bi bi-mortarboard-fill fs-4 me-2" style="color: #1E40AF;"></i>
+      <span><?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></span>
     </a>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
@@ -63,7 +100,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
         <li class="nav-item">
           <a class="nav-link" href="<?= $baseUrl; ?>/students">Students</a>
         </li>
-        <?php if (Auth::user()['role'] === 'admin'): ?>
+        <?php if (Auth::isAdmin()): ?>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Admin
@@ -72,6 +109,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/lookups">
                 <i class="bi bi-gear me-2"></i>Manage Lookups
               </a></li>
+              <?php if (Auth::isSuperAdmin()): ?>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">
                 <i class="bi bi-sliders me-2"></i>Settings & Fields
               </a></li>
@@ -87,6 +125,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
                   </button>
                 </form>
               </li>
+              <?php endif; ?>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/activity">
                 <i class="bi bi-clock-history me-2"></i>Activity Log
               </a></li>

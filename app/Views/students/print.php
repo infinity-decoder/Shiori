@@ -34,11 +34,9 @@
 
   <div class="profile">
     <div class="photo">
-      <?php if (!empty($student['photo_path'])): ?>
-        <img src="<?= $baseUrl; ?>/uploads/students/<?= rawurlencode($student['photo_path']); ?>" alt="photo">
-      <?php else: ?>
-        <div style="background:#f0f0f0;height:220px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:#999;">No photo</div>
-      <?php endif; ?>
+      <img src="<?= getStudentImageUrl($student, $baseUrl, 'full') ?>" 
+           alt="<?= htmlspecialchars($student['student_name']) ?>" 
+           style="width:100%; height:auto; max-height:220px; object-fit:contain;">
     </div>
     <div class="info">
       <table>

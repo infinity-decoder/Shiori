@@ -4,8 +4,8 @@ class AdminController extends Controller
     public function backup(): void
     {
         $this->requireAuth();
-        if (!Auth::isAdmin()) {
-            Auth::flash('error', 'Only admins can create backups.');
+        if (!Auth::isSuperAdmin()) {
+            Auth::flash('error', 'Only super admins can create backups.');
             $this->redirect('/dashboard');
         }
 
@@ -110,8 +110,8 @@ class AdminController extends Controller
     public function clearLogs(): void
     {
         $this->requireAuth();
-        if (!Auth::isAdmin()) {
-            Auth::flash('error', 'Only admins can clear activity logs.');
+        if (!Auth::isSuperAdmin()) {
+            Auth::flash('error', 'Only super admins can clear activity logs.');
             $this->redirect('/dashboard');
         }
 

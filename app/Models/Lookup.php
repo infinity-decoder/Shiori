@@ -9,9 +9,15 @@ class Lookup
 {
     // ==================== CLASSES ====================
     
-    public static function getClasses(): array
+    public static function getClasses(bool $onlyActive = false): array
     {
-        $stmt = DB::get()->query("SELECT id, name FROM classes ORDER BY id");
+        $sql = "SELECT id, name, is_active FROM classes";
+        if ($onlyActive) {
+            $sql .= " WHERE is_active = 1";
+        }
+        $sql .= " ORDER BY id";
+        
+        $stmt = DB::get()->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
@@ -48,9 +54,15 @@ class Lookup
     
     // ==================== SECTIONS ====================
     
-    public static function getSections(): array
+    public static function getSections(bool $onlyActive = false): array
     {
-        $stmt = DB::get()->query("SELECT id, name FROM sections ORDER BY id");
+        $sql = "SELECT id, name, is_active FROM sections";
+        if ($onlyActive) {
+            $sql .= " WHERE is_active = 1";
+        }
+        $sql .= " ORDER BY id";
+        
+        $stmt = DB::get()->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
@@ -95,9 +107,15 @@ class Lookup
     
     // ==================== CATEGORIES ====================
     
-    public static function getCategories(): array
+    public static function getCategories(bool $onlyActive = false): array
     {
-        $stmt = DB::get()->query("SELECT id, name FROM categories ORDER BY id");
+        $sql = "SELECT id, name, is_active FROM categories";
+        if ($onlyActive) {
+            $sql .= " WHERE is_active = 1";
+        }
+        $sql .= " ORDER BY id";
+        
+        $stmt = DB::get()->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
@@ -134,9 +152,15 @@ class Lookup
     
     // ==================== FAMILY CATEGORIES ====================
     
-    public static function getFamilyCategories(): array
+    public static function getFamilyCategories(bool $onlyActive = false): array
     {
-        $stmt = DB::get()->query("SELECT id, name FROM family_categories ORDER BY id");
+        $sql = "SELECT id, name, is_active FROM family_categories";
+        if ($onlyActive) {
+            $sql .= " WHERE is_active = 1";
+        }
+        $sql .= " ORDER BY id";
+        
+        $stmt = DB::get()->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
@@ -199,5 +223,33 @@ class Lookup
         $stmt->execute([$id]);
         
         return (int)$stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    }
+        
+    /**
+     * Toggle active status of any lookup item
+     * @param string $type Type: class, section, category, fcategory, session
+     * @param int $id Lookup ID
+     * @return bool True on success
+     */
+    public static function toggle(string $type, int $id): bool
+    {
+        $pdo = DB::get();
+        
+        $tableMap = [
+            'class' => 'classes',
+            'section' => 'sections',
+            'category' => 'categories',
+            'fcategory' => 'family_categories',
+            'session' => 'sessions'
+        ];
+        
+        if (!isset($tableMap[$type])) {
+            throw new InvalidArgumentException("Invalid lookup type: $type");
+        }
+        
+        $table = $tableMap[$type];
+        
+        $stmt = $pdo->prepare("UPDATE {$table} SET is_active = NOT is_active WHERE id = ?");
+        return $stmt->execute([$id]);
     }
 }

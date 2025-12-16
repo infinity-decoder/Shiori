@@ -61,11 +61,11 @@ class StudentController extends Controller
         require_once BASE_PATH . '/app/Models/Session.php';
         
         $lookups = [
-            'classes'        => Lookup::getClasses(),
-            'sections'       => Lookup::getSections(),
-            'sessions'       => Lookup::getSessions(), // From database
-            'categories'     => Lookup::getCategories(),
-            'familyCategories' => Lookup::getFamilyCategories(),
+            'classes'        => Lookup::getClasses(true),
+            'sections'       => Lookup::getSections(true),
+            'sessions'       => Lookup::getSessions(), // Already active-only
+            'categories'     => Lookup::getCategories(true),
+            'familyCategories' => Lookup::getFamilyCategories(true),
         ];
         // Get active fields
         require_once BASE_PATH . '/app/Models/Field.php';
@@ -103,9 +103,13 @@ class StudentController extends Controller
 
         $validation = Validator::validateStudent($_POST, $_FILES);
         if (!empty($validation['errors'])) {
+            Auth::setOldInput($_POST); // Preserve form data
             Auth::flash('error', implode(' | ', $validation['errors']));
             $this->redirect('/students/create');
         }
+
+        // Clear old input on successful validation
+        Auth::flushOldInput();
 
         $data = $validation['data'];
         try {
@@ -128,10 +132,13 @@ class StudentController extends Controller
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] !== UPLOAD_ERR_NO_FILE) {
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
                 if ($saved['ok']) {
-                    $updateData = ['photo_path' => $saved['filename']];
-                    if (!empty($saved['thumbnail_blob'])) {
-                        $updateData['thumbnail_blob'] = $saved['thumbnail_blob'];
-                    }
+                    $updateData = [
+                        'photo_path' => $saved['filename'],
+                        'photo_blob' => $saved['photo_blob'] ?? null,
+                        'photo_mime' => $saved['photo_mime'] ?? null,
+                        'photo_hash' => $saved['photo_hash'] ?? null,
+                        'thumbnail_blob' => $saved['thumbnail_blob'] ?? null
+                    ];
                     Student::update($id, $updateData);
                 } else {
                     Auth::flash('error', 'Saved student but photo upload failed: ' . $saved['error']);
@@ -147,6 +154,7 @@ class StudentController extends Controller
                 'enrollment_no' => $data['enrollment_no'] ?? '',
             ]);
 
+            Auth::flushOldInput(); // Clear old input on success
             Auth::flash('success', 'Student added successfully.');
             $this->redirect('/students');
         } catch (PDOException $e) {
@@ -176,11 +184,11 @@ class StudentController extends Controller
         require_once BASE_PATH . '/app/Models/Session.php';
         
         $lookups = [
-            'classes'        => Lookup::getClasses(),
-            'sections'       => Lookup::getSections(),
-            'sessions'       => Lookup::getSessions(), // From database
-            'categories'     => Lookup::getCategories(),
-            'familyCategories' => Lookup::getFamilyCategories(),
+            'classes'        => Lookup::getClasses(true),
+            'sections'       => Lookup::getSections(true),
+            'sessions'       => Lookup::getSessions(), // Already active-only
+            'categories'     => Lookup::getCategories(true),
+            'familyCategories' => Lookup::getFamilyCategories(true),
         ];
         // Get active fields
         require_once BASE_PATH . '/app/Models/Field.php';
@@ -229,9 +237,13 @@ class StudentController extends Controller
 
         $validation = Validator::validateStudent($_POST, $_FILES, true);
         if (!empty($validation['errors'])) {
+            Auth::setOldInput($_POST); // Preserve form data
             Auth::flash('error', implode(' | ', $validation['errors']));
             $this->redirect('/students/edit?id=' . $id);
         }
+
+        // Clear old input on successful validation
+        Auth::flushOldInput();
 
         $data = $validation['data'];
         
@@ -255,7 +267,13 @@ class StudentController extends Controller
                 }
                 $saved = ImageService::saveStudentPhoto($_FILES['photo'], $id);
                 if ($saved['ok']) {
-                    Student::update($id, ['photo_path' => $saved['filename']]);
+                    Student::update($id, [
+                        'photo_path' => $saved['filename'],
+                        'photo_blob' => $saved['photo_blob'] ?? null,
+                        'photo_mime' => $saved['photo_mime'] ?? null,
+                        'photo_hash' => $saved['photo_hash'] ?? null,
+                        'thumbnail_blob' => $saved['thumbnail_blob'] ?? null
+                    ]);
                 } else {
                     Auth::flash('error', 'Student updated but photo upload failed: ' . $saved['error']);
                     $this->redirect('/students');
@@ -269,6 +287,7 @@ class StudentController extends Controller
                 'roll_no' => $data['roll_no'] ?? '',
             ]);
 
+            Auth::flushOldInput(); // Clear old input on success
             Auth::flash('success', 'Student updated successfully.');
             $this->redirect('/students');
         } catch (PDOException $e) {
@@ -374,58 +393,27 @@ class StudentController extends Controller
             $this->redirect('/students/import');
         }
 
-        $handle = fopen($file['tmp_name'], 'r');
-        if (!$handle) {
-            Auth::flash('error', 'Could not open file.');
-            $this->redirect('/students/import');
-        }
-
-        // Skip header
-        fgetcsv($handle);
-
-        $count = 0;
-        $errors = [];
-        $rowNum = 1;
-
-        while (($row = fgetcsv($handle)) !== false) {
-            $rowNum++;
-            // Basic mapping: Roll, Enrollment, Name, Father Name, ClassID, SectionID
-            // Expected format: Roll, Enrollment, Name, Father, ClassID, SectionID
-            if (count($row) < 6) {
-                $errors[] = "Row $rowNum: Not enough columns.";
-                continue;
+        // Use enterprise import service
+        require_once BASE_PATH . '/app/Services/CSVImportService.php';
+        
+        try {
+            $result = CSVImportService::importFile($file['tmp_name']);
+            
+            // Flash success message
+            if ($result->isFullSuccess()) {
+                Auth::flash('success', $result->toFlashMessage());
+            } elseif ($result->isPartialSuccess()) {
+                Auth::flash('success', $result->toFlashMessage());
+                if (!empty($result->errors)) {
+                    Auth::flash('error', 'Import errors: ' . $result->getErrorSummary(5));
+                }
+            } elseif ($result->isCompleteFailure()) {
+                Auth::flash('error', $result->toFlashMessage() . ' ' . $result->getErrorSummary(5));
+            } else {
+                Auth::flash('error', 'No valid data found in CSV file');
             }
-
-            $data = [
-                'roll_no' => $row[0],
-                'enrollment_no' => $row[1],
-                'student_name' => $row[2],
-                'father_name' => $row[3],
-                'class_id' => (int)$row[4],
-                'section_id' => (int)$row[5],
-                // Defaults
-                'session' => date('Y') . '-' . (date('Y')+1),
-                'category_id' => 1, // Default
-                'fcategory_id' => 1, // Default
-            ];
-
-            try {
-                Student::create($data);
-                $count++;
-            } catch (Exception $e) {
-                $errors[] = "Row $rowNum: " . $e->getMessage();
-            }
-        }
-        fclose($handle);
-
-        if ($count > 0) {
-            Auth::flash('success', "Imported $count students.");
-        }
-        if (!empty($errors)) {
-            // Limit errors to avoid huge session cookie
-            $errStr = implode(' | ', array_slice($errors, 0, 5));
-            if (count($errors) > 5) $errStr .= '... (and more)';
-            Auth::flash('error', "Errors: " . $errStr);
+        } catch (Exception $e) {
+            Auth::flash('error', 'Import failed: ' . $e->getMessage());
         }
         
         $this->redirect('/students');
@@ -548,14 +536,22 @@ class StudentController extends Controller
     public function downloadTemplate(): void
     {
         $this->requireAuth();
+        
+        require_once BASE_PATH . '/app/Services/CSVTemplateService.php';
+        
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="student_import_template.csv"');
         
         $out = fopen('php://output', 'w');
-        // Standard headers matching the import logic
-        fputcsv($out, ['Roll No', 'Enrollment No', 'Student Name', 'Father Name', 'Class ID', 'Section ID']);
-        // Example row
-        fputcsv($out, ['101', 'ENR-2025-001', 'John Doe', 'Richard Doe', '1', '1']);
+        
+        // Get dynamic headers based on active fields
+        $headers = CSVTemplateService::generateHeaders();
+        fputcsv($out, $headers);
+        
+        // Get example row
+        $exampleRow = CSVTemplateService::generateExampleRow();
+        fputcsv($out, $exampleRow);
+        
         fclose($out);
         exit;
     }
@@ -702,6 +698,78 @@ class StudentController extends Controller
         $baseUrl = rtrim($appCfg['base_url'], '/');
         // Make $student & $baseUrl available to the view file
         include BASE_PATH . '/app/Views/students/print.php';
+        exit;
+    }
+    
+    /**
+     * Serve student photo with filesystem-first, database-fallback strategy
+     */
+    public function servePhoto(): void
+    {
+        $id = (int)($_GET['id'] ?? 0);
+        $size = $_GET['size'] ?? 'thumb';
+        
+        if ($id <= 0) {
+            $this->serveDefaultAvatar();
+            return;
+        }
+        
+        $student = Student::find($id);
+        if (!$student) {
+            $this->serveDefaultAvatar();
+            return;
+        }
+        
+        $uploadsDir = BASE_PATH . '/public/uploads/students';
+        
+        // Try filesystem cache first (fastest)
+        if (!empty($student['photo_path'])) {
+            if ($size === 'thumb') {
+                $base = pathinfo($student['photo_path'], PATHINFO_FILENAME);
+                $thumbPath = $uploadsDir . DIRECTORY_SEPARATOR . 'thumb_' . $base . '.jpg';
+                if (file_exists($thumbPath)) {
+                    ImageService::serveImage(file_get_contents($thumbPath), 'image/jpeg');
+                }
+            }
+            
+            $fullPath = $uploadsDir . DIRECTORY_SEPARATOR . $student['photo_path'];
+            if (file_exists($fullPath)) {
+                $mime = $student['photo_mime'] ?? 'image/jpeg';
+                ImageService::serveImage(file_get_contents($fullPath), $mime);
+            }
+        }
+        
+        // Fallback to database BLOB (portability)
+        if (!empty($student['photo_blob'])) {
+            // Regenerate filesystem cache for future requests
+            ImageService::regenerateFromBlob($id, $student['photo_blob'], $student['photo_mime'] ?? 'image/jpeg');
+            
+            // Serve appropriate version
+            if ($size === 'thumb' && !empty($student['thumbnail_blob'])) {
+                ImageService::serveImage($student['thumbnail_blob'], 'image/jpeg');
+            } else {
+                ImageService::serveImage($student['photo_blob'], $student['photo_mime'] ?? 'image/jpeg');
+            }
+        }
+        
+        // Final fallback: default avatar
+        $this->serveDefaultAvatar();
+    }
+    
+    /**
+     * Serve default avatar SVG
+     */
+    private function serveDefaultAvatar(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+            <rect fill="#e2e8f0" width="200" height="200"/>
+            <circle cx="100" cy="80" r="35" fill="#94a3b8"/>
+            <path d="M100 120 Q70 140 50 180 H150 Q130 140 100 120 Z" fill="#94a3b8"/>
+        </svg>';
+        
+        header('Content-Type: image/svg+xml');
+        header('Cache-Control: public, max-age=86400');
+        echo $svg;
         exit;
     }
 }

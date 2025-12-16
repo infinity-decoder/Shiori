@@ -66,10 +66,23 @@ require_once BASE_PATH . '/app/Models/User.php';
 require_once BASE_PATH . '/app/Models/Student.php';
 require_once BASE_PATH . '/app/Models/Lookup.php';
 
+// Helpers
+require_once BASE_PATH . '/app/Core/Helpers.php';
+require_once BASE_PATH . '/app/Helpers/ImageHelper.php';
+
 // Services
 require_once BASE_PATH . '/app/Services/Validator.php';
 require_once BASE_PATH . '/app/Services/ImageService.php';
 require_once BASE_PATH . '/app/Services/ActivityLog.php';
+require_once BASE_PATH . '/app/Services/LookupService.php';
+require_once BASE_PATH . '/app/Services/CSVTemplateService.php';
+require_once BASE_PATH . '/app/Services/ImportResult.php';
+require_once BASE_PATH . '/app/Services/CSVImportService.php';
+
+// Seed default categories and family categories if needed
+if (file_exists(BASE_PATH . '/config/database.php')) {
+    LookupService::seedDefaults();
+}
 
 // Controllers
 require_once BASE_PATH . '/app/Controllers/AuthController.php';
@@ -109,6 +122,7 @@ $router->get('/api/search', 'ApiController@search');
 
 // Student CRUD + extras
 $router->get('/students', 'StudentController@index');
+$router->get('/students/photo', 'StudentController@servePhoto');
 $router->get('/students/create', 'StudentController@create');
 $router->post('/students', 'StudentController@store');
 $router->get('/students/show', 'StudentController@show');      // ?id=#
@@ -144,11 +158,14 @@ $router->post('/lookups/classes/delete', 'LookupController@deleteClass');
 $router->post('/lookups/sections/store', 'LookupController@storeSection');
 $router->post('/lookups/sections/delete', 'LookupController@deleteSection');
 $router->post('/lookups/sessions/store', 'LookupController@storeSession');
-$router->post('/lookups/sessions/toggle', 'LookupController@toggleSession');
+$router->post('/lookups/sessions/delete', 'LookupController@deleteSession');
 $router->post('/lookups/categories/store', 'LookupController@storeCategory');
 $router->post('/lookups/categories/delete', 'LookupController@deleteCategory');
 $router->post('/lookups/familycategories/store', 'LookupController@storeFamilyCategory');
 $router->post('/lookups/familycategories/delete', 'LookupController@deleteFamilyCategory');
+
+// Shared Toggle Route
+$router->post('/lookups/toggle', 'LookupController@toggle');
 
 // Admin utilities
 $router->get('/admin/backup', 'AdminController@backup');      // DB dump (admin only)

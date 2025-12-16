@@ -13,8 +13,12 @@ class Validator
         // helper
         $get = fn($k) => isset($input[$k]) ? trim((string)$input[$k]) : '';
 
-        // Required fields (for create)
-        $required = ['roll_no', 'enrollment_no', 'class_id', 'section_id', 'student_name', 'father_name', 'category_id', 'fcategory_id'];
+        // Required fields (for create) - updated to include DOB, Father Occupation, CNIC, Mobile, Address
+        $required = [
+            'roll_no', 'enrollment_no', 'class_id', 'section_id', 
+            'student_name', 'dob', 'father_name', 'father_occupation', 
+            'cnic', 'mobile', 'address', 'category_id', 'fcategory_id'
+        ];
         foreach ($required as $r) {
             if (!$isUpdate && $get($r) === '') {
                 $errors[] = ucfirst(str_replace('_', ' ', $r)) . ' is required.';
@@ -53,7 +57,19 @@ class Validator
             }
         }
 
-        $data['b_form'] = $get('b_form');
+        // B-Form: validate 13 digits if present
+        $rawBForm = $get('b_form');
+        $bFormDigits = preg_replace('/\D+/', '', $rawBForm);
+        if ($bFormDigits !== '') {
+            if (strlen($bFormDigits) !== 13) {
+                $errors[] = 'B-Form must contain exactly 13 digits.';
+            } else {
+                $data['b_form'] = $bFormDigits;
+            }
+        } else {
+            $data['b_form'] = null;
+        }
+
         $data['father_name'] = $get('father_name');
 
         // CNIC: allow digits & dashes; normalize to digits-only for storage
