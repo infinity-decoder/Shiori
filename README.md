@@ -186,12 +186,19 @@ Shiori/
 
 ## 📸 Screenshots
 ![Logo](public/assets/images/logo.svg)
+
 ![Installer](public/assets/images/installer.png)
+
 ![Dashboard](public/assets/images/dashboard.png)
+
 ![Students Record](public/assets/images/students.png)
-![Add Record](public/assets/images/add record.png)
-![Manage Lookup](public/assets/images/manage lookup.png)
+
+![Add record](<public/assets/images/add record.png>)
+
+![Manage lookup](<public/assets/images/manage lookup.png>)
+
 ![Settings](public/assets/images/settings.png)
+
 ![add user](<public/assets/images/add user.png>)
 ---
 
