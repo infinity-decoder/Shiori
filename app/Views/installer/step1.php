@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Install Shiori - Step 1/4</title>
     <!-- Local Assets for Offline Support -->
-    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/css/installer-style.css" rel="stylesheet">
+    <link href="<?= BASE_URL ?>/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= BASE_URL ?>/assets/css/installer-style.css" rel="stylesheet">
 </head>
 <body>
 
 <div class="container">
     <div class="brand-logo mt-4">
-        <img src="../assets/images/logo.svg" alt="Shiori Logo">
+        <img src="<?= BASE_URL ?>/assets/images/logo.svg" alt="Shiori Logo">
         <div>Shiori Installer</div>
     </div>
     
@@ -66,6 +66,6 @@
     </div>
 </div>
 
-<script src="../assets/js/bootstrap.bundle.min.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
