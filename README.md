@@ -1,4 +1,4 @@
-<h1 style="font-family: 'poppins'; font-weight: bold; color: Green;">👨‍💻Author: MAHBOOB ALAM</h1>
+<h1 style="font-family: 'poppins'; font-weight: bold; color: Green;">👨‍💻Author: INFINITY DECODER</h1>
 
 [![GitHub](https://img.shields.io/badge/GitHub-Profile-red?style=for-the-badge&logo=github)](https://github.com/infinity-decoder) 
 [![Kaggle](https://img.shields.io/badge/Kaggle-Profile-orange?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/infinitydecoder) 
@@ -29,33 +29,8 @@
 - ✅ **Password Security**: Mandatory password changes, strength validation
 - ✅ **Database Backup**: One-click MySQL database backup
 - ✅ **Responsive Design**: Mobile-friendly Bootstrap 5 interface
-- ✅ **Installer Wizard**: WordPress-style installer for easy setup
+- ✅ **Installer Wizard**:  installer for easy setup
 
----
-
-## 🧱 Technology Stack
-
-### Backend
-- **PHP** 8.0+ (Vanilla - No frameworks)
-- **MySQL** 5.7+ / 8.x
-- **Apache** 2.4 with `mod_rewrite`
-- **PDO** for secure database connections
-- **Custom MVC** architecture (Router, Controllers, Models, Views)
-
-### Frontend
-- **Bootstrap 5** - Responsive UI framework
-- **Bootstrap Icons** - Icon library
-- **SweetAlert2** - Beautiful alerts and modals
-- **Chart.js** - Dashboard statistics
-- **Flatpickr** - Date picker
-- **FilePond** - File uploads
-
-### Security
-- **CSRF Protection** - Token-based form protection
-- **Password Hashing** - bcrypt via PHP's `password_hash()`
-- **Session Management** - Secure session handling
-- **SQL Injection Prevention** - Prepared statements with PDO
-- **Input Validation** - Server-side validation for all inputs
 
 ---
 
@@ -145,12 +120,6 @@
    ];
    ```
 
-5. **Create Super Admin**
-   ```sql
-   INSERT INTO users (username, password_hash, role, name, email, created_at) 
-   VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin', 'Super Admin', 'admin@example.com', NOW());
-   -- Password: password
-   ```
 
 ---
 
@@ -175,20 +144,7 @@ The `base_url` in `config/app.php` must match your server setup:
 'base_url' => 'https://yourdomain.com/shiori',
 ```
 
-### Apache Configuration
 
-Ensure `mod_rewrite` is enabled:
-```apache
-LoadModule rewrite_module modules/mod_rewrite.so
-```
-
-Virtual host or directory needs:
-```apache
-<Directory "/path/to/Shiori/public">
-    AllowOverride All
-    Require all granted
-</Directory>
-```
 
 ---
 
@@ -226,48 +182,17 @@ Shiori/
 └── storage/              # Logs and temporary files
 ```
 
----
 
-## 🔒 Security Best Practices
-
-1. **Change Default Credentials**: Always change the default admin password after installation
-2. **Enable HTTPS**: Use SSL/TLS in production
-3. **File Permissions**: Restrict write access to only necessary directories
-4. **Database Security**: Use strong passwords and restrict database user privileges
-5. **Disable Debug Mode**: Set `'debug' => false` in `config/app.php` for production
-6. **Regular Backups**: Use the built-in backup feature regularly
-7. **Keep Updated**: Monitor for security updates
-
----
-
-## 🐛 Troubleshooting
-
-### 404 Errors / Routing Issues
-- Verify `mod_rewrite` is enabled
-- Check `.htaccess` exists in `/public`
-- Ensure `AllowOverride All` is set in Apache config
-- Verify `base_url` matches your actual URL
-
-### File Upload Issues
-- Check `public/uploads/` is writable (`chmod 755` or `777`)
-- Verify PHP `upload_max_filesize` and `post_max_size` in `php.ini`
-- Check `file_uploads = On` in `php.ini`
-
-### Database Connection Failed
-- Verify MySQL service is running
-- Check credentials in `config/database.php`
-- Ensure database exists and user has proper privileges
-
-### Backup Feature Not Working (Windows)
-- Ensure `mysqldump.exe` is in your system PATH
-- Check that `exec()` function is not disabled in `php.ini`
-
----
 
 ## 📸 Screenshots
-
-> Add screenshots of your application here
-
+![Logo](public/assets/images/logo.svg)
+![Installer](public/assets/images/installer.png)
+![Dashboard](public/assets/images/dashboard.png)
+![Students Record](public/assets/images/students.png)
+![Add Record](public/assets/images/add record.png)
+![Manage Lookup](public/assets/images/manage lookup.png)
+![Settings](public/assets/images/settings.png)
+![add user](<public/assets/images/add user.png>)
 ---
 
 ## 🤝 Contributing
@@ -293,7 +218,7 @@ This project is open-source and available under the [MIT License](LICENSE).
 
 <div align="center">
 
-**Made with ❤️ by [MAHBOOB ALAM](https://profile.infinitydecoder.com/)**
+**Made with ❤️ by [INFINITY DECODER](https://profile.infinitydecoder.com/)**
 
 ⭐ Star this repo if you find it helpful!
 
