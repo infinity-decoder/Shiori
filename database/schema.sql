@@ -17,6 +17,18 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Users Backup
+CREATE TABLE IF NOT EXISTS `users_backup` (
+  `id` int(11) NOT NULL DEFAULT 0,
+  `username` varchar(50) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `role` enum('admin','staff','viewer') DEFAULT 'viewer',
+  `name` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `last_login` datetime DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Lookups
 CREATE TABLE IF NOT EXISTS `classes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -66,6 +78,9 @@ CREATE TABLE IF NOT EXISTS `students` (
   `fcategory_id` int(11) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `photo_path` varchar(255) DEFAULT NULL,
+  `photo_blob` LONGBLOB DEFAULT NULL,
+  `photo_mime` varchar(50) DEFAULT NULL,
+  `photo_hash` varchar(64) DEFAULT NULL,
   `bps` varchar(20) DEFAULT NULL,
   `religion` varchar(50) DEFAULT NULL,
   `caste` varchar(50) DEFAULT NULL,

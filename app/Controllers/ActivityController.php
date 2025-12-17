@@ -16,6 +16,7 @@ class ActivityController extends Controller
         
         $this->view('activity/index.php', [
             'title' => 'Activity Log | Shiori',
+            'logs' => $logs
         ]);
     }
 

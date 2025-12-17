@@ -203,12 +203,12 @@ class Student
         INSERT INTO students
             (roll_no, enrollment_no, session, class_id, section_id, student_name, dob, b_form,
              father_name, cnic, mobile, address, father_occupation, category_id, fcategory_id, email, photo_path,
-             thumbnail_blob,
+             photo_blob, photo_mime, photo_hash, thumbnail_blob,
              bps, religion, caste, domicile)
         VALUES
             (:roll_no, :enrollment_no, :session, :class_id, :section_id, :student_name, :dob, :b_form,
              :father_name, :cnic, :mobile, :address, :father_occupation, :category_id, :fcategory_id, :email, :photo_path,
-             :thumbnail_blob,
+             :photo_blob, :photo_mime, :photo_hash, :thumbnail_blob,
              :bps, :religion, :caste, :domicile)
     ");
     $stmt->execute([
@@ -229,6 +229,9 @@ class Student
         ':fcategory_id' => $data['fcategory_id'],
         ':email' => $data['email'] ?? null,
         ':photo_path' => $data['photo_path'] ?? null,
+        ':photo_blob' => $data['photo_blob'] ?? null,
+        ':photo_mime' => $data['photo_mime'] ?? null,
+        ':photo_hash' => $data['photo_hash'] ?? null,
         ':thumbnail_blob' => $data['thumbnail_blob'] ?? null,
         ':bps' => $data['bps'] ?? null,
         ':religion' => $data['religion'] ?? null,
@@ -253,7 +256,7 @@ class Student
             'roll_no','enrollment_no','session','class_id','section_id','student_name','dob',
             'b_form','father_name','cnic','mobile','address','father_occupation',
             'category_id','fcategory_id','email','photo_path',
-            'thumbnail_blob',
+            'photo_blob','photo_mime','photo_hash','thumbnail_blob',
             'bps','religion','caste','domicile'
         ], true)) {
             $fields[] = "`$k` = :$k";
