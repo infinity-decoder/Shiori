@@ -372,8 +372,8 @@ class LookupService
 
         $session = date('Y') . '-' . (date('Y') + 1);
         try {
-            require_once BASE_PATH . '/app/Models/Lookup.php';
-            Lookup::createSession($session);
+            require_once BASE_PATH . '/app/Models/Session.php';
+            Session::create($session);
         } catch (Exception $e) {}
     }
 }

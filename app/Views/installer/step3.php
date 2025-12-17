@@ -4,22 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Install Shiori - Review</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        .install-card { max-width: 600px; margin: 50px auto; border: none; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        .brand-logo { font-size: 2rem; font-weight: bold; color: #4e73df; text-align: center; margin-bottom: 20px; }
-        .step-indicator { display: flex; justify-content: space-between; margin-bottom: 2rem; }
-        .step { text-align: center; opacity: 0.5; font-size: 0.9rem; }
-        .step.active { opacity: 1; font-weight: bold; color: #4e73df; }
-    </style>
+    <link href="../assets/installer/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/installer/css/style.css" rel="stylesheet">
 </head>
 <body>
 
 <div class="container">
-    <div class="brand-logo mt-5">Shiori Installer</div>
+    <div class="brand-logo mt-4">
+        <img src="../assets/installer/img/logo.svg" alt="Shiori Logo">
+        <div>Shiori Installer</div>
+    </div>
     
-    <div class="card install-card">
+    <div class="card install-card mx-auto" style="max-width: 600px;">
         <div class="card-body p-5">
             <div class="step-indicator">
                 <div class="step">1. Database</div>
@@ -27,24 +23,24 @@
                 <div class="step active">3. Finish</div>
             </div>
 
-            <h4 class="card-title mb-4">Ready to Install?</h4>
+            <h4 class="card-title">Ready to Install?</h4>
             
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
             <div class="list-group mb-4">
-                <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; border-color: #4a5568; color: inherit;">
                     <div>
                         <strong>Database</strong><br>
-                        <small class="text-muted"><?= htmlspecialchars($_SESSION['install_db']['user'] . '@' . $_SESSION['install_db']['host'] . ' / ' . $_SESSION['install_db']['name']) ?></small>
+                        <small class="text-muted" style="color: #a0aec0 !important;"><?= htmlspecialchars($_SESSION['install_db']['user'] . '@' . $_SESSION['install_db']['host'] . ' / ' . $_SESSION['install_db']['name']) ?></small>
                     </div>
                     <span class="badge bg-success rounded-pill">Verified</span>
                 </div>
-                <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; border-color: #4a5568; color: inherit;">
                     <div>
                         <strong>Super Admin</strong><br>
-                        <small class="text-muted"><?= htmlspecialchars($_SESSION['install_admin']['user'] . ' (' . $_SESSION['install_admin']['email'] . ')') ?></small>
+                        <small class="text-muted" style="color: #a0aec0 !important;"><?= htmlspecialchars($_SESSION['install_admin']['user'] . ' (' . $_SESSION['install_admin']['email'] . ')') ?></small>
                     </div>
                 </div>
             </div>
@@ -60,7 +56,12 @@
             </form>
         </div>
     </div>
+    
+    <div class="text-center mt-3 text-muted" style="font-size: 0.8rem; opacity: 0.7;">
+        &copy; <?= date('Y') ?> Shiori SIS
+    </div>
 </div>
 
+<script src="../assets/installer/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

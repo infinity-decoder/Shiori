@@ -1,0 +1,83 @@
+/* Darker Theme for Installer */
+body {
+    background: linear-gradient(135deg, #1a1c23 0%, #2c3e50 100%);
+    color: #e0e6ed;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.install-card {
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    color: #edf2f7;
+    border-radius: 12px;
+}
+
+.card-title {
+    color: #fff;
+    border-bottom: 1px solid #4a5568;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.form-label {
+    color: #cbd5e0;
+    font-weight: 500;
+}
+
+.form-control {
+    background-color: #1a202c;
+    border: 1px solid #4a5568;
+    color: #fff;
+}
+
+.form-control:focus {
+    background-color: #1a202c;
+    border-color: #4e73df;
+    color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+}
+
+.brand-logo {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.brand-logo img {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+}
+
+.step {
+    color: #a0aec0;
+}
+
+.step.active {
+    color: #63b3ed;
+    font-weight: 700;
+}
+
+.alert-danger {
+    background-color: #742a2a;
+    border-color: #9b2c2c;
+    color: #fff5f5;
+}
