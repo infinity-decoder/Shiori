@@ -94,7 +94,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
   <div class="container">
     <a class="navbar-brand" href="<?= $baseUrl; ?>/dashboard">
-      <i class="bi bi-mortarboard-fill fs-4 me-2" style="color: #1E40AF;"></i>
+      <img src="<?= $baseUrl; ?>/assets/images/logo.svg" alt="<?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?> Logo">
       <span><?= htmlspecialchars($appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></span>
     </a>
     <div class="collapse navbar-collapse" id="navbarNav">
