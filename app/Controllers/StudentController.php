@@ -620,11 +620,11 @@ class StudentController extends Controller
 
         $out = fopen('php://output', 'w');
 
-        // CSV header - added BPS, Religion, Caste, Domicile
+        // CSV header - User requested sequence
         fputcsv($out, [
-            'ID','Roll No','Enrollment No','Class','Section','Name','DOB','B.form',
-            'BPS','Religion','Caste','Domicile',
-            'Father Name','CNIC','Mobile','Email','Category','Family Category','Address','Photo Path','Created At','Updated At'
+            'Roll No','Enrollment No','Student Name','Date of Birth','B.form','Father Name',
+            'CNIC','Mobile','Class Name','Section','Session','Father Occupation','BPS',
+            'Category','Family Category','Email','Religion','Caste','Address','Created At','Updated At'
         ]);
 
         $pdo = DB::get();
@@ -641,29 +641,25 @@ class StudentController extends Controller
             ");
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 fputcsv($out, [
-                    $row['id'],
                     $row['roll_no'],
                     $row['enrollment_no'],
-                    $row['class_name'] ?? $row['class_id'],
-                    $row['section_name'] ?? $row['section_id'],
                     $row['student_name'] ?? '',
                     $row['dob'] ?? '',
                     $row['b_form'] ?? '',
-
-                    // NEW fields
-                    $row['bps'] ?? '',
-                    $row['religion'] ?? '',
-                    $row['caste'] ?? '',
-                    $row['domicile'] ?? '',
-
                     $row['father_name'] ?? '',
                     $row['cnic'] ?? '',
                     $row['mobile'] ?? '',
-                    $row['email'] ?? '',
+                    $row['class_name'] ?? ($row['class_id'] ?? ''),
+                    $row['section_name'] ?? ($row['section_id'] ?? ''),
+                    $row['session'] ?? '',
+                    $row['father_occupation'] ?? '',
+                    $row['bps'] ?? '',
                     $row['category_name'] ?? '',
                     $row['fcategory_name'] ?? '',
+                    $row['email'] ?? '',
+                    $row['religion'] ?? '',
+                    $row['caste'] ?? '',
                     $row['address'] ?? '',
-                    $row['photo_path'] ?? '',
                     $row['created_at'] ?? '',
                     $row['updated_at'] ?? ''
                 ]);
@@ -685,29 +681,25 @@ class StudentController extends Controller
             $stmt->execute();
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 fputcsv($out, [
-                    $row['id'],
                     $row['roll_no'],
                     $row['enrollment_no'],
-                    $row['class_name'] ?? $row['class_id'],
-                    $row['section_name'] ?? $row['section_id'],
                     $row['student_name'] ?? '',
                     $row['dob'] ?? '',
                     $row['b_form'] ?? '',
-
-                    // NEW fields
-                    $row['bps'] ?? '',
-                    $row['religion'] ?? '',
-                    $row['caste'] ?? '',
-                    $row['domicile'] ?? '',
-
                     $row['father_name'] ?? '',
                     $row['cnic'] ?? '',
                     $row['mobile'] ?? '',
-                    $row['email'] ?? '',
+                    $row['class_name'] ?? ($row['class_id'] ?? ''),
+                    $row['section_name'] ?? ($row['section_id'] ?? ''),
+                    $row['session'] ?? '',
+                    $row['father_occupation'] ?? '',
+                    $row['bps'] ?? '',
                     $row['category_name'] ?? '',
                     $row['fcategory_name'] ?? '',
+                    $row['email'] ?? '',
+                    $row['religion'] ?? '',
+                    $row['caste'] ?? '',
                     $row['address'] ?? '',
-                    $row['photo_path'] ?? '',
                     $row['created_at'] ?? '',
                     $row['updated_at'] ?? ''
                 ]);
