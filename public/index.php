@@ -152,7 +152,9 @@ $router->post('/users/delete', 'UserController@delete');
 // Manage Fields
 $router->get('/manage-fields', 'ManageFieldsController@index');
 $router->post('/fields/store', 'ManageFieldsController@store');
+$router->post('/fields/update', 'ManageFieldsController@update');
 $router->post('/fields/toggle', 'ManageFieldsController@toggle');
+$router->post('/fields/reorder', 'ManageFieldsController@reorder');
 $router->post('/fields/delete', 'ManageFieldsController@delete');
 
 // Settings (Users, Recovery, Logs)

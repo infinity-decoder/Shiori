@@ -22,6 +22,12 @@ class Field
         return $row ?: null;
     }
 
+    // Alias for find() for consistency
+    public static function getById(int $id): ?array
+    {
+        return self::find($id);
+    }
+
     public static function create(array $data): int
     {
         $pdo = DB::get();
@@ -130,6 +136,40 @@ class Field
 
         foreach ($defaults as $d) {
             $stmt->execute([$d[0], $d[1], $d[2], $d[3], $d[4]]);
+        }
+    }
+
+    public static function reorder(int $id, string $direction): void
+    {
+        $pdo = DB::get();
+        
+        // Get current field
+        $current = self::find($id);
+        if (!$current) return;
+        
+        $currentOrder = (int)$current['order_index'];
+        
+        // Find adjacent field
+        if ($direction === 'up') {
+            $stmt = $pdo->prepare("SELECT * FROM fields WHERE order_index < ? ORDER BY order_index DESC LIMIT 1");
+        } else {
+            $stmt = $pdo->prepare("SELECT * FROM fields WHERE order_index > ? ORDER BY order_index ASC LIMIT 1");
+        }
+        $stmt->execute([$currentOrder]);
+        $adjacent = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($adjacent) {
+            // Swap order indices
+            $adjacentOrder = (int)$adjacent['order_index'];
+            
+            $pdo->beginTransaction();
+            try {
+                $pdo->prepare("UPDATE fields SET order_index = ? WHERE id = ?")->execute([$adjacentOrder, $id]);
+                $pdo->prepare("UPDATE fields SET order_index = ? WHERE id = ?")->execute([$currentOrder, $adjacent['id']]);
+                $pdo->commit();
+            } catch (Exception $e) {
+                $pdo->rollBack();
+            }
         }
     }
 }

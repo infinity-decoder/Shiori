@@ -620,90 +620,99 @@ class StudentController extends Controller
 
         $out = fopen('php://output', 'w');
 
-        // CSV header - User requested sequence
-        fputcsv($out, [
+        // Fetch active custom fields to append to headers
+        require_once BASE_PATH . '/app/Models/Field.php';
+        $customFields = array_filter(Field::getAll(true), fn($f) => $f['is_custom'] == 1);
+
+        // Core Headers
+        $headers = [
             'Roll No','Enrollment No','Student Name','Date of Birth','B.form','Father Name',
             'CNIC','Mobile','Class Name','Section','Session','Father Occupation','BPS',
             'Category','Family Category','Email','Religion','Caste','Address','Created At','Updated At'
-        ]);
+        ];
+
+        // Append Custom Field Headers
+        foreach ($customFields as $field) {
+            $headers[] = $field['label'];
+        }
+
+        fputcsv($out, $headers);
 
         $pdo = DB::get();
 
-        if ($all === 1) {
-            $stmt = $pdo->query("
-                SELECT s.*, c.name AS class_name, sec.name AS section_name, cat.name AS category_name, fc.name AS fcategory_name
-                FROM students s
-                LEFT JOIN classes c ON s.class_id = c.id
-                LEFT JOIN sections sec ON s.section_id = sec.id
-                LEFT JOIN categories cat ON s.category_id = cat.id
-                LEFT JOIN family_categories fc ON s.fcategory_id = fc.id
-                ORDER BY s.id DESC
-            ");
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                fputcsv($out, [
-                    $row['roll_no'],
-                    $row['enrollment_no'],
-                    $row['student_name'] ?? '',
-                    $row['dob'] ?? '',
-                    $row['b_form'] ?? '',
-                    $row['father_name'] ?? '',
-                    $row['cnic'] ?? '',
-                    $row['mobile'] ?? '',
-                    $row['class_name'] ?? ($row['class_id'] ?? ''),
-                    $row['section_name'] ?? ($row['section_id'] ?? ''),
-                    $row['session'] ?? '',
-                    $row['father_occupation'] ?? '',
-                    $row['bps'] ?? '',
-                    $row['category_name'] ?? '',
-                    $row['fcategory_name'] ?? '',
-                    $row['email'] ?? '',
-                    $row['religion'] ?? '',
-                    $row['caste'] ?? '',
-                    $row['address'] ?? '',
-                    $row['created_at'] ?? '',
-                    $row['updated_at'] ?? ''
-                ]);
-            }
-        } else {
+        // Build Query with Custom Fields Join
+        $sql = "
+            SELECT s.*, 
+                   c.name AS class_name, 
+                   sec.name AS section_name, 
+                   cat.name AS category_name, 
+                   fc.name AS fcategory_name,
+                   GROUP_CONCAT(CONCAT(sm.field_id, ':::', COALESCE(sm.value, '')) SEPARATOR '|||') as meta_data
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            LEFT JOIN sections sec ON s.section_id = sec.id
+            LEFT JOIN categories cat ON s.category_id = cat.id
+            LEFT JOIN family_categories fc ON s.fcategory_id = fc.id
+            LEFT JOIN student_meta sm ON s.id = sm.student_id
+            GROUP BY s.id
+            ORDER BY s.id DESC
+        ";
+
+        if ($all !== 1) {
             $offset = ($page - 1) * $perPage;
-            $stmt = $pdo->prepare("
-                SELECT s.*, c.name AS class_name, sec.name AS section_name, cat.name AS category_name, fc.name AS fcategory_name
-                FROM students s
-                LEFT JOIN classes c ON s.class_id = c.id
-                LEFT JOIN sections sec ON s.section_id = sec.id
-                LEFT JOIN categories cat ON s.category_id = cat.id
-                LEFT JOIN family_categories fc ON s.fcategory_id = fc.id
-                ORDER BY s.id DESC
-                LIMIT :limit OFFSET :offset
-            ");
+            $sql .= " LIMIT :limit OFFSET :offset";
+            $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
             $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                fputcsv($out, [
-                    $row['roll_no'],
-                    $row['enrollment_no'],
-                    $row['student_name'] ?? '',
-                    $row['dob'] ?? '',
-                    $row['b_form'] ?? '',
-                    $row['father_name'] ?? '',
-                    $row['cnic'] ?? '',
-                    $row['mobile'] ?? '',
-                    $row['class_name'] ?? ($row['class_id'] ?? ''),
-                    $row['section_name'] ?? ($row['section_id'] ?? ''),
-                    $row['session'] ?? '',
-                    $row['father_occupation'] ?? '',
-                    $row['bps'] ?? '',
-                    $row['category_name'] ?? '',
-                    $row['fcategory_name'] ?? '',
-                    $row['email'] ?? '',
-                    $row['religion'] ?? '',
-                    $row['caste'] ?? '',
-                    $row['address'] ?? '',
-                    $row['created_at'] ?? '',
-                    $row['updated_at'] ?? ''
-                ]);
+        } else {
+            $stmt = $pdo->query($sql);
+        }
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            // Base Data
+            $data = [
+                $row['roll_no'],
+                $row['enrollment_no'],
+                $row['student_name'] ?? '',
+                $row['dob'] ?? '',
+                $row['b_form'] ?? '',
+                $row['father_name'] ?? '',
+                $row['cnic'] ?? '',
+                $row['mobile'] ?? '',
+                $row['class_name'] ?? ($row['class_id'] ?? ''),
+                $row['section_name'] ?? ($row['section_id'] ?? ''),
+                $row['session'] ?? '',
+                $row['father_occupation'] ?? '',
+                $row['bps'] ?? '',
+                $row['category_name'] ?? '',
+                $row['fcategory_name'] ?? '',
+                $row['email'] ?? '',
+                $row['religion'] ?? '',
+                $row['caste'] ?? '',
+                $row['address'] ?? '',
+                $row['created_at'] ?? '',
+                $row['updated_at'] ?? ''
+            ];
+
+            // Parse Meta Data
+            $metaMap = [];
+            if (!empty($row['meta_data'])) {
+                $pairs = explode('|||', $row['meta_data']);
+                foreach ($pairs as $pair) {
+                    $parts = explode(':::', $pair, 2);
+                    if (count($parts) === 2) {
+                        $metaMap[$parts[0]] = $parts[1];
+                    }
+                }
             }
+
+            // Append Custom Field Values
+            foreach ($customFields as $field) {
+                $data[] = $metaMap[$field['id']] ?? '';
+            }
+
+            fputcsv($out, $data);
         }
 
         fclose($out);
