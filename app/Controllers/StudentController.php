@@ -354,9 +354,15 @@ class StudentController extends Controller
             Auth::flash('error', 'Student not found.');
             $this->redirect('/students');
         }
+        // Inject active custom fields
+        require_once BASE_PATH . '/app/Models/Field.php';
+        Field::seedDefaults();
+        $fields = array_filter(Field::getAll(true), fn($f) => $f['is_custom'] == 1);
+
         $this->view('students/view.php', [
             'title'   => 'View Student | Shiori',
             'student' => $student,
+            'fields'  => $fields,
         ]);
     }
 
@@ -608,6 +614,10 @@ class StudentController extends Controller
     public function export(): void
     {
         $this->requireAuth();
+        if (!Auth::isAdmin()) {
+            Auth::flash('error', 'Unauthorized access.');
+            $this->redirect('/dashboard');
+        }
         $all = (int)($_GET['all'] ?? 0);
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = (int)($_GET['per_page'] ?? 10);
@@ -742,7 +752,11 @@ class StudentController extends Controller
         // Render a standalone print-friendly HTML (not using the main layout)
         $appCfg = require BASE_PATH . '/config/app.php';
         $baseUrl = rtrim($appCfg['base_url'], '/');
-        // Make $student & $baseUrl available to the view file
+        // Make $student, $fields & $baseUrl available to the view file
+        require_once BASE_PATH . '/app/Models/Field.php';
+        Field::seedDefaults();
+        $fields = array_filter(Field::getAll(true), fn($f) => $f['is_custom'] == 1);
+        
         include BASE_PATH . '/app/Views/students/print.php';
         exit;
     }

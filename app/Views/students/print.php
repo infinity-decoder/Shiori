@@ -59,7 +59,15 @@
             <tr><th>Family Category</th><td><?= htmlspecialchars($student['fcategory_name'] ?? ''); ?></td></tr>
             <tr><th>Email</th><td><?= htmlspecialchars($student['email'] ?? ''); ?></td></tr>
               <!-- NEW: fields that were previously missing -->
-            
+            <?php if (!empty($fields)): ?>
+                <?php foreach ($fields as $field): ?>
+                    <tr>
+                        <th><?= htmlspecialchars($field['label']) ?></th>
+                        <td><?= htmlspecialchars($student[$field['name']] ?? '') ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+
             <tr><th>Religion</th><td><?= htmlspecialchars($student['religion'] ?? ''); ?></td></tr>
             <tr><th>Caste</th><td><?= htmlspecialchars($student['caste'] ?? ''); ?></td></tr>
             <tr><th>Domicile</th><td><?= htmlspecialchars($student['domicile'] ?? ''); ?></td></tr>

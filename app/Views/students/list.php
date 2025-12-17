@@ -13,7 +13,9 @@ $totalPages = (int)ceil(($total ?: 0) / max(1, $per_page));
       <a href="<?= $baseUrl; ?>/dashboard" class="btn btn-outline-secondary">Dashboard</a>
       <a href="<?= $baseUrl; ?>/students/create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Student</a>
       <a href="#" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="bi bi-search"></i> Search</a>
+      <?php if (Auth::isAdmin()): ?>
       <a href="<?= $baseUrl; ?>/students/export?all=1" class="btn btn-outline-success"><i class="bi bi-file-earmark-arrow-down"></i> Export CSV</a>
+      <?php endif; ?>
     </div>
   </div>
 

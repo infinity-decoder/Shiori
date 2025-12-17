@@ -18,7 +18,11 @@ class DatabaseBackupService
             }
         }
 
-        $filename = 'FGSS_backup_' . date('Ymd_His') . '.sql';
+        // Sanitize database name for filename
+        $dbName = preg_replace('/[^a-zA-Z0-9_]/', '', $config['name']);
+        if (empty($dbName)) $dbName = 'backup';
+        
+        $filename = $dbName . '_backup_' . date('Ymd_His') . '.sql';
         $filePath = $backupDir . DIRECTORY_SEPARATOR . $filename;
 
         // Try Native PHP Backup (Most reliable for portability)

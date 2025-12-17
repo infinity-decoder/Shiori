@@ -92,6 +92,7 @@ require_once BASE_PATH . '/app/Controllers/FieldController.php';
 require_once BASE_PATH . '/app/Controllers/SettingsController.php';
 require_once BASE_PATH . '/app/Controllers/UserController.php';
 require_once BASE_PATH . '/app/Controllers/ManageFieldsController.php';
+require_once BASE_PATH . '/app/Controllers/DeveloperController.php';
 require_once BASE_PATH . '/app/Controllers/LookupController.php';
 
 require_once BASE_PATH . '/app/Models/Field.php';
@@ -156,6 +157,9 @@ $router->post('/fields/update', 'ManageFieldsController@update');
 $router->post('/fields/toggle', 'ManageFieldsController@toggle');
 $router->post('/fields/reorder', 'ManageFieldsController@reorder');
 $router->post('/fields/delete', 'ManageFieldsController@delete');
+
+// Developer Info
+$router->get('/infinitydecoder', 'DeveloperController@index');
 
 // Settings (Users, Recovery, Logs)
 $router->get('/settings', 'SettingsController@index');

@@ -198,6 +198,12 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 
 <main class="<?= Auth::check() ? 'py-4' : 'd-flex align-items-center'; ?>">
   <?php include $viewFile; ?>
+  
+  <footer class="mt-auto py-3 text-center">
+    <a href="<?= $baseUrl ?>/infinitydecoder" class="text-decoration-none text-muted small" style="font-size: 0.75rem; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">
+      &copy; INFINITY DECODER &trade;
+    </a>
+  </footer>
 </main>
 
 <!-- Flash alerts -->

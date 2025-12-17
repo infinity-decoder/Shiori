@@ -87,9 +87,15 @@
                 </a>
               </div>
               <div class="col-6">
+                <?php if (Auth::isAdmin()): ?>
                 <a href="<?= $baseUrl; ?>/students/export?all=1" class="btn btn-success w-100">
                   <i class="bi bi-download me-1"></i>Export CSV
                 </a>
+                <?php else: ?>
+                <button class="btn btn-secondary w-100" disabled title="Admin only">
+                  <i class="bi bi-lock me-1"></i>Export CSV
+                </button>
+                <?php endif; ?>
               </div>
             </div>
           </div>
