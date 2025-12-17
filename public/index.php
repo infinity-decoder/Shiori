@@ -15,11 +15,8 @@ if (!file_exists(BASE_PATH . '/config/database.php')) {
     
     $uri = $_SERVER['REQUEST_URI'];
     // Simple routing for installer
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        (new InstallerController())->install();
-    } else {
-        (new InstallerController())->index();
-    }
+    // Simple routing for installer
+    (new InstallerController())->handleRequest();
     exit;
 }
 
@@ -152,6 +149,7 @@ $router->post('/users/delete', 'UserController@delete');
 
 // Settings
 $router->get('/settings', 'SettingsController@index');
+$router->post('/settings/email', 'SettingsController@storeEmail');
 
 // Activity Log
 $router->get('/activity', 'ActivityController@index');
