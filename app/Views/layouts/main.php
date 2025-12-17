@@ -112,14 +112,17 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
             </a>
             <ul class="dropdown-menu" aria-labelledby="adminDropdown">
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/lookups">
-                <i class="bi bi-gear me-2"></i>Manage Lookups
+                <i class="bi bi-list-columns-reverse me-2"></i>Manage Lookups
               </a></li>
               <?php if (Auth::isSuperAdmin()): ?>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/users">
                 <i class="bi bi-people me-2"></i>Manage Users
               </a></li>
+              <li><a class="dropdown-item" href="<?= $baseUrl; ?>/manage-fields">
+                <i class="bi bi-ui-checks-grid me-2"></i>Manage Fields
+              </a></li>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/settings">
-                <i class="bi bi-sliders me-2"></i>Settings & Fields
+                <i class="bi bi-sliders me-2"></i>Settings
               </a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="<?= $baseUrl; ?>/admin/backup">

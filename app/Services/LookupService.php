@@ -52,6 +52,7 @@ class LookupService
         self::seedCategories();
         self::seedSections();
         self::seedClasses();
+        self::seedSessions();
     }
     
     /**
@@ -352,5 +353,27 @@ class LookupService
         }
         
         return null;
+    }
+
+    /**
+     * Seed default sessions (Current Year + Next)
+     */
+    private static function seedSessions(): void
+    {
+        $pdo = DB::get();
+        // Check if table exists and has data
+        try {
+            $stmt = $pdo->query("SELECT COUNT(*) FROM sessions");
+            $count = (int)$stmt->fetchColumn();
+            if ($count > 0) return;
+        } catch (Exception $e) {
+            return;
+        }
+
+        $session = date('Y') . '-' . (date('Y') + 1);
+        try {
+            require_once BASE_PATH . '/app/Models/Lookup.php';
+            Lookup::createSession($session);
+        } catch (Exception $e) {}
     }
 }

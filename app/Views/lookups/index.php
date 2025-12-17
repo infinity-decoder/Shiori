@@ -6,7 +6,7 @@ $title = $title ?? 'Manage Lookups | Shiori';
 <div class="container">
     <div class="row mb-4">
         <div class="col">
-            <h1><span style="font-size:1.2em;">∞</span> Manage Lookups</h1>
+            <h1><i class="bi bi-list-columns-reverse text-primary"></i> Manage Lookups</h1>
             <p class="text-muted">Manage classes, sections, sessions, and categories for your student information system.</p>
         </div>
     </div>

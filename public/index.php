@@ -91,6 +91,7 @@ require_once BASE_PATH . '/app/Controllers/AdminController.php';
 require_once BASE_PATH . '/app/Controllers/FieldController.php';
 require_once BASE_PATH . '/app/Controllers/SettingsController.php';
 require_once BASE_PATH . '/app/Controllers/UserController.php';
+require_once BASE_PATH . '/app/Controllers/ManageFieldsController.php';
 require_once BASE_PATH . '/app/Controllers/LookupController.php';
 
 require_once BASE_PATH . '/app/Models/Field.php';
@@ -148,17 +149,22 @@ $router->post('/users/update', 'UserController@update');
 $router->post('/users/delete', 'UserController@delete');
 
 // Settings
+// Manage Fields
+$router->get('/manage-fields', 'ManageFieldsController@index');
+$router->post('/fields/store', 'ManageFieldsController@store');
+$router->post('/fields/toggle', 'ManageFieldsController@toggle');
+$router->post('/fields/delete', 'ManageFieldsController@delete');
+
+// Settings (Users, Recovery, Logs)
 $router->get('/settings', 'SettingsController@index');
 $router->post('/settings/email', 'SettingsController@storeEmail');
 
 // Activity Log
 $router->get('/activity', 'ActivityController@index');
+$router->post('/activity/clear', 'ActivityController@clear');
 
-// Fields Management
-$router->get('/fields', 'FieldController@index');
-$router->post('/fields/store', 'FieldController@store');
-$router->post('/fields/toggle', 'FieldController@toggle');
-$router->post('/fields/delete', 'FieldController@delete');
+// Activity Log
+$router->get('/activity', 'ActivityController@index');
 
 // Lookup Management (Admin only)
 $router->get('/lookups', 'LookupController@index');

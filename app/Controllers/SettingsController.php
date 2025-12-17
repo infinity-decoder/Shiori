@@ -1,55 +1,65 @@
 <?php
 
-require_once BASE_PATH . '/app/Models/Field.php';
+require_once BASE_PATH . '/app/Services/DatabaseHelper.php';
+require_once BASE_PATH . '/app/Services/ActivityLogger.php';
 
 class SettingsController extends Controller
 {
     public function index(): void
     {
         $this->requireAuth();
-        if (!Auth::isSuperAdmin()) {
-            Auth::flash('error', 'Unauthorized access.');
+        // Allow Admin or Super Admin to view settings, but specific tabs might be restricted in View?
+        // User requested: Manage Users, Setup Recovery, Activity Log
+        // "Manage Users" usually requires Admin. "Recovery" Super Admin.
+        if (!Auth::isAdmin()) {
             $this->redirect('/dashboard');
         }
 
-        // Fetch fields
-        $fields = Field::getAll(false); // get all, including inactive
+        // Ensure tables exist to prevent crashing
+        DatabaseHelper::ensureSettingsTable();
         
         $this->view('settings/index.php', [
             'title' => 'Settings | Shiori',
-            'fields' => $fields,
-            'email' => $this->getEmailSettings()
+            'email' => $this->getEmailSettings(),
+            'logs' => ActivityLogger::getLatest(20), // Preview logs
+            'users' => [] // Users fetched via Ajax or separate controller usually, but if simple...
         ]);
     }
 
     private function getEmailSettings(): array
     {
         $pdo = DB::get();
-        // Fetch all settings starting with smtp_ or mail_
-        $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'smtp_%' OR setting_key LIKE 'mail_%'");
-        $rows = $stmt->fetchAll();
-        $settings = [];
-        foreach ($rows as $row) {
-            $settings[$row['setting_key']] = $row['setting_value'];
+        try {
+            $stmt = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'smtp_%' OR setting_key LIKE 'mail_%'");
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $settings = [];
+            foreach ($rows as $row) {
+                $settings[$row['setting_key']] = $row['setting_value'];
+            }
+            return $settings;
+        } catch (Exception $e) {
+            return []; // Fail safe
         }
-        return $settings;
     }
 
     public function storeEmail(): void
     {
         $this->requireAuth();
         if (!Auth::isSuperAdmin()) {
-            $this->redirect('/dashboard');
+            Auth::flash('error', 'Only Super Admin can change recovery settings.');
+            $this->redirect('/settings');
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/settings');
         }
-
+        
         if (!CSRF::verify($_POST['csrf_token'] ?? null)) {
-            Auth::flash('error', 'Invalid CSRF token.');
+            Auth::flash('error', 'Invalid Security Token');
             $this->redirect('/settings');
         }
+
+        DatabaseHelper::ensureSettingsTable();
 
         $data = [
             'smtp_host' => $_POST['smtp_host'] ?? '',
@@ -60,22 +70,14 @@ class SettingsController extends Controller
         ];
 
         $pdo = DB::get();
+        // Assuming settings table exists now
         $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
         
-        try {
-            foreach ($data as $key => $val) {
-                // If password is empty/masked, don't overwrite if not changed? 
-                // Simple version: overwrite. Real version: handle password masking.
-                // Assuming admin wants to update if they type it.
-                $stmt->execute([$key, $val]);
-            }
-            Auth::flash('success', 'Email settings updated.');
-        } catch (Exception $e) {
-            Auth::flash('error', 'Failed to save settings: ' . $e->getMessage());
+        foreach ($data as $key => $val) {
+            $stmt->execute([$key, $val]);
         }
-
+        
+        Auth::flash('success', 'Email settings saved.');
         $this->redirect('/settings');
     }
-
-
 }
