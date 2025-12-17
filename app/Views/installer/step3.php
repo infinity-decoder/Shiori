@@ -30,17 +30,17 @@
             <?php endif; ?>
 
             <div class="list-group mb-4">
-                <div class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; border-color: #4a5568; color: inherit;">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>Database</strong><br>
-                        <small class="text-muted" style="color: #a0aec0 !important;"><?= htmlspecialchars($_SESSION['install_db']['user'] . '@' . $_SESSION['install_db']['host'] . ' / ' . $_SESSION['install_db']['name']) ?></small>
+                        <small class="text-muted"><?= htmlspecialchars($_SESSION['install_db']['user'] . '@' . $_SESSION['install_db']['host'] . ' / ' . $_SESSION['install_db']['name']) ?></small>
                     </div>
                     <span class="badge bg-success rounded-pill">Verified</span>
                 </div>
-                <div class="list-group-item d-flex justify-content-between align-items-center" style="background-color: transparent; border-color: #4a5568; color: inherit;">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>Super Admin</strong><br>
-                        <small class="text-muted" style="color: #a0aec0 !important;"><?= htmlspecialchars($_SESSION['install_admin']['user'] . ' (' . $_SESSION['install_admin']['email'] . ')') ?></small>
+                        <small class="text-muted"><?= htmlspecialchars($_SESSION['install_admin']['user'] . ' (' . $_SESSION['install_admin']['email'] . ')') ?></small>
                     </div>
                 </div>
             </div>

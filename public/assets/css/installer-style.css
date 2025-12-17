@@ -1,49 +1,55 @@
-/* Darker Theme for Installer */
+/* Light Theme for Installer */
 body {
-    background: linear-gradient(135deg, #1a1c23 0%, #2c3e50 100%);
-    color: #e0e6ed;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #2d3748;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .install-card {
-    background-color: #2d3748;
-    border: 1px solid #4a5568;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    color: #edf2f7;
+    background-color: #ffffff;
+    border: 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    color: #2d3748;
     border-radius: 12px;
 }
 
 .card-title {
-    color: #fff;
-    border-bottom: 1px solid #4a5568;
+    color: #1a202c;
+    border-bottom: 1px solid #e2e8f0;
     padding-bottom: 15px;
     margin-bottom: 25px;
+    font-weight: 600;
 }
 
 .form-label {
-    color: #cbd5e0;
+    color: #4a5568;
     font-weight: 500;
+    margin-bottom: 0.5rem;
 }
 
 .form-control {
-    background-color: #1a202c;
-    border: 1px solid #4a5568;
-    color: #fff;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e0;
+    color: #1a202c;
+    padding: 0.6rem 1rem;
 }
 
 .form-control:focus {
-    background-color: #1a202c;
+    background-color: #ffffff;
     border-color: #4e73df;
-    color: #fff;
-    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    color: #1a202c;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15);
 }
 
 .btn-primary {
     background-color: #4e73df;
     border-color: #4e73df;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
 }
 
 .btn-primary:hover {
@@ -52,32 +58,43 @@ body {
 }
 
 .brand-logo {
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    color: #2d3748;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
     margin-bottom: 30px;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .brand-logo img {
     width: 80px;
     height: 80px;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+}
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    gap: 2rem;
 }
 
 .step {
     color: #a0aec0;
+    font-size: 0.9rem;
+    user-select: none;
 }
 
 .step.active {
-    color: #63b3ed;
+    color: #4e73df;
     font-weight: 700;
+    border-bottom: 2px solid #4e73df;
 }
 
 .alert-danger {
-    background-color: #742a2a;
-    border-color: #9b2c2c;
-    color: #fff5f5;
+    background-color: #fff5f5;
+    border-color: #feb2b2;
+    color: #c53030;
+    border-radius: 8px;
 }

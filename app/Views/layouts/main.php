@@ -196,7 +196,7 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
 </nav>
 <?php endif; ?>
 
-<main class="<?= Auth::check() ? 'py-4' : 'd-flex align-items-center'; ?>">
+<main class="<?= Auth::check() ? 'py-4' : 'min-vh-100 d-flex flex-column justify-content-center align-items-center'; ?>">
   <?php include $viewFile; ?>
   
   <footer class="mt-auto py-3 text-center">
