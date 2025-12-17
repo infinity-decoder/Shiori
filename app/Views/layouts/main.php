@@ -13,16 +13,16 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
   <title><?= htmlspecialchars($title ?? $appCfg['name'], ENT_QUOTES, 'UTF-8'); ?></title>
 
   <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="<?= $baseUrl ?>/assets/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="<?= $baseUrl ?>/assets/css/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Flatpickr (date picker) -->
-  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+  <link href="<?= $baseUrl ?>/assets/css/flatpickr.min.css" rel="stylesheet">
 
   <!-- FilePond (file uploads) -->
-  <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet">
+  <link href="<?= $baseUrl ?>/assets/css/filepond.min.css" rel="stylesheet">
 
   <style>
     :root { 
@@ -76,16 +76,16 @@ $baseUrl      = rtrim($appCfg['base_url'], '/');
   </style>
 
   <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="<?= $baseUrl ?>/assets/js/sweetalert2.all.min.js"></script>
 
   <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="<?= $baseUrl ?>/assets/js/chart.umd.min.js"></script>
 
   <!-- Flatpickr JS -->
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="<?= $baseUrl ?>/assets/js/flatpickr.min.js"></script>
 
   <!-- FilePond JS -->
-  <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+  <script src="<?= $baseUrl ?>/assets/js/filepond.min.js"></script>
 
 </head>
 <body class="<?= Auth::check() ? '' : 'bg-gradient'; ?>">
@@ -225,7 +225,7 @@ Swal.fire({
 <?php endif; ?>
 
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= $baseUrl ?>/assets/js/bootstrap.bundle.min.js"></script>
 
 <script>
 /**

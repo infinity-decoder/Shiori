@@ -292,7 +292,7 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               if (!empty($photoField)): 
             ?>
             <!-- Cropper CSS -->
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+            <link href="<?= $baseUrl ?>/assets/css/cropper.min.css" rel="stylesheet">
             
             <div class="card border-0 shadow-sm">
               <div class="card-body text-center p-3">
@@ -364,7 +364,7 @@ $requiredFields = ['student_name', 'dob', 'father_name', 'father_occupation', 'c
               </div>
             </div>
             
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+            <script src="<?= $baseUrl ?>/assets/js/cropper.min.js"></script>
             <script>
             document.addEventListener('DOMContentLoaded', function() {
               const photoInput = document.getElementById('photoInput');
