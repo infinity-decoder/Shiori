@@ -16,12 +16,12 @@
 **Shiori** is a modern, lightweight, and secure Student Information System (SIS) built with vanilla PHP and a clean MVC architecture. It's designed for schools and educational institutions that need a fast, simple, and reliable solution without the overhead of large frameworks.
 
 ---
+
 [![GitHub release](https://img.shields.io/github/v/release/infinity-decoder/Shiori)](#)
 [![GitHub release date](https://img.shields.io/github/release-date/infinity-decoder/Shiori)](#)
 [![GitHub last commit](https://img.shields.io/github/last-commit/infinity-decoder/Shiori)](#)
 
-
-[![Download First Release v 1.0](https://img.shields.io/badge/website-visit-indigo?style=for-the-badge&logo=download)](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
+[![Download First Release v 1.0](https://img.shields.io/badge/Download-Shiori-indigo?style=for-the-badge&logo=download)](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
 
 ## 🚀 Features
 
