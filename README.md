@@ -214,7 +214,7 @@ Shiori/
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-> [!Contributors]
+> [!IMPORTANT]
 <a href="https://github.com/infinity-decoder/Shiori/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=infinity-decoder/Shiori" alt="contrib.rocks image" />
 </a>
