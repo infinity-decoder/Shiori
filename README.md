@@ -17,7 +17,7 @@
 
 ---
 
-[![GitHub release](https://img.shields.io/github/v/release/infinity-decoder/Shiori)](#)
+[![GitHub release](https://img.shields.io/github/v/release/infinity-decoder/Shiori)](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
 [![GitHub release date](https://img.shields.io/github/release-date/infinity-decoder/Shiori)](#)
 [![GitHub last commit](https://img.shields.io/github/last-commit/infinity-decoder/Shiori)](#)
 
