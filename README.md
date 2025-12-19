@@ -180,11 +180,15 @@ Shiori/
 
 ![login](public/assets/images/login.png)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ![Dashboard](public/assets/images/dashboard.png)
 
 ![Students Record](public/assets/images/students.png)
 
 ![search record](public/assets/images/search.png)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ![Add record](<public/assets/images/add record.png>)
 
@@ -192,11 +196,15 @@ Shiori/
 
 ![Manage lookup](<public/assets/images/manage lookup.png>)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ![Manage Fields](<public/assets/images/Manage fields.png>)
 
 ![Settings](public/assets/images/settings.png)
 
 ![user management](<public/assets/images/User Management.png>)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ![record view](public/assets/images/view.png)
 
@@ -205,6 +213,8 @@ Shiori/
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+> [!Top Contributors]
 <a href="https://github.com/infinity-decoder/Shiori/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=infinity-decoder/Shiori" alt="contrib.rocks image" />
 </a>
