@@ -39,7 +39,7 @@
 
 
 ---
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## 📦 Installation
@@ -132,7 +132,7 @@ The `base_url` in `config/app.php` must match your server setup:
 ```php
 'base_url' => 'https://yourdomain.com/shiori',
 ```
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ---
@@ -170,7 +170,7 @@ Shiori/
 │   └── index.php         # Front controller
 └── storage/              # Logs and temporary files
 ```
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ## 📸 Screenshots
@@ -205,6 +205,11 @@ Shiori/
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+<a href="https://github.com/infinity-decoder/Shiori/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=infinity-decoder/Shiori" alt="contrib.rocks image" />
+</a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ---
 
@@ -222,6 +227,7 @@ This project is open-source and available under the [MIT License](LICENSE).
 - All contributors and testers
 
 ---
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <div align="center">
 
