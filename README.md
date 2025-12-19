@@ -19,7 +19,7 @@
 
 
 
-![Download First Release v 1.0](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
+[![Download First Release v 1.0](https://img.shields.io/badge/website-visit-indigo?style=for-the-badge&logo=download)](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
 
 ## 🚀 Features
 
