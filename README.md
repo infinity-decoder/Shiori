@@ -17,6 +17,10 @@
 
 ---
 
+
+
+![Download First Release v 1.0](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
+
 ## 🚀 Features
 
 - ✅ **Student Management**: Add, edit, delete, search, and view student records
@@ -34,21 +38,7 @@
 
 ---
 
-## 📋 Requirements
 
-- **PHP** 8.0 or higher with extensions:
-  - `pdo_mysql` - Database connectivity
-  - `fileinfo` - File type detection
-  - `gd` or `imagick` - Image thumbnail generation
-  - `openssl` - Secure operations
-  - `mbstring` - Multibyte string handling
-
-- **MySQL** 5.7+ or 8.x
-- **Apache** 2.4 with `mod_rewrite` enabled
-- **Web Server**: Laragon, XAMPP, or standard LAMP/LEMP stack
-- **Permissions**: Write access to `public/uploads/` directory
-
----
 
 ## 📦 Installation
 
@@ -121,9 +111,6 @@
    ```
 
 
----
-
-## 🔧 Configuration
 
 ### Base URL Configuration
 
@@ -189,17 +176,28 @@ Shiori/
 
 ![Installer](public/assets/images/installer.png)
 
+![login](public/assets/images/login.png)
+
 ![Dashboard](public/assets/images/dashboard.png)
 
 ![Students Record](public/assets/images/students.png)
 
+![search record](public/assets/images/search.png)
+
 ![Add record](<public/assets/images/add record.png>)
+
+![Import Csv](<public/assets/images/import CSV.png>)
 
 ![Manage lookup](<public/assets/images/manage lookup.png>)
 
+![Manage Fields](<public/assets/images/Manage fields.png>)
+
 ![Settings](public/assets/images/settings.png)
 
-![add user](<public/assets/images/add user.png>)
+![user management](<public/assets/images/User Management.png>)
+
+![record view](public/assets/images/view.png)
+
 ---
 
 ## 🤝 Contributing
