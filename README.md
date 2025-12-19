@@ -38,7 +38,7 @@
 [issues-shield]: https://img.shields.io/github/issues/infinity-decoder/Shiori.svg?style=for-the-badge
 [issues-url]: https://github.com/infinity-decoder/Shiori/issues
 [license-shield]: https://img.shields.io/github/license/infinity-decoder/Shiori.svg?style=for-the-badge
-[license-url]: https://github.com/infinity-decoder/Shiori/blob/master/LICENSE.txt
+[license-url]: https://github.com/infinity-decoder/Shiori/blob/main/LICENSE.txt
 
 ## 🚀 Features
 
