@@ -23,6 +23,23 @@
 
 [![Download First Release v 1.0](https://img.shields.io/badge/Download-Shiori-indigo?style=for-the-badge&logo=download)](https://github.com/infinity-decoder/Shiori/releases/tag/v1.0.0)
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![License][license-shield]][license-url]
+
+[contributors-shield]: https://img.shields.io/github/contributors/infinity-decoder/Shiori.svg?style=for-the-badge
+[contributors-url]: https://github.com/infinity-decoder/Shiori/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/infinity-decoder/Shiori.svg?style=for-the-badge
+[forks-url]: https://github.com/infinity-decoder/Shiori/network/members
+[stars-shield]: https://img.shields.io/github/stars/infinity-decoder/Shiori.svg?style=for-the-badge
+[stars-url]: https://github.com/infinity-decoder/Shiori/stargazers
+[issues-shield]: https://img.shields.io/github/issues/infinity-decoder/Shiori.svg?style=for-the-badge
+[issues-url]: https://github.com/infinity-decoder/Shiori/issues
+[license-shield]: https://img.shields.io/github/license/infinity-decoder/Shiori.svg?style=for-the-badge
+[license-url]: https://github.com/infinity-decoder/Shiori/blob/master/LICENSE.txt
+
 ## 🚀 Features
 
 - ✅ **Student Management**: Add, edit, delete, search, and view student records
