@@ -37,7 +37,7 @@
 [stars-url]: https://github.com/infinity-decoder/Shiori/stargazers
 [issues-shield]: https://img.shields.io/github/issues/infinity-decoder/Shiori.svg?style=for-the-badge
 [issues-url]: https://github.com/infinity-decoder/Shiori/issues
-[license-shield]: https://img.shields.io/github/license/infinity-decoder/Shiori.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/badge/license-MIT-orange.svg?style=for-the-badge
 [license-url]: https://github.com/infinity-decoder/Shiori/blob/main/LICENSE.txt
 
 ## 🚀 Features
